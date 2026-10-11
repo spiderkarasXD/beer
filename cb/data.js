@@ -4,7 +4,7 @@
    ========================================================= */
 
 // Люди в ленте «Последние дропы» (lafore выбивает только ножи)
-const USERS = ["flankker","4x3","kotak_bas","артем1337","12kkot","noul","illka2407","shekebede","pidor","marklox228","moskwich","mecori","deltoao","fakitly","liana1xx","dviz","arsovich","егор1337","v1","gemeni","lafore","gart","m1dni9ht","pixel","amnam","chellol","pookie","xrenobys","coolver","rayla","7sofa7","wnexy","dalbanzik","KFCfan99","ColdFace","Sniper228","s1mple_fan","FlashGod","Вася_Пупкин","BWN_master","g2_enjoyer","navi_enjoyer","major_kid","clutch_king","aim_trainer","one_tap_god","ecoround","rush_b","molotov_man","bhopper","pro_noob"];
+const USERS = ["flankker","4x3","kotak_bas","артем1337","12kkot","noul","illka2407","shekebede","pidor","marklox228","moskwich","mecori","deltoao","fakitly","liana1xx","dviz","arsovich","егор1337","v1","gemeni","lafore","gart","m1dni9ht","pixel","amnam","chellol","pookie","xrenobys","coolver","rayla","7sofa7","wnexy","dalbanzik","KFCfan99","ColdFace","Sniper228","s1mple_fan","FlashGod","Вася_Пупкин","BWN_master","g2_enjoyer","navi_enjoyer","major_kid","clutch_king","aim_trainer","one_tap_god","ecoround","rush_b","molotov_man","bhopper","pro_noob","hphvdom","dumchik"];
 
 const RARITY = {
   consumer:   { name: 'Ширпотреб',        color: 'var(--r-consumer)' },
