@@ -274,6 +274,13 @@ a { color: inherit; }
 .lcard .bot b { display: block; font-size: 14px; font-weight: 500; }
 .lcard .bot span { font-size: 14px; color: var(--yellow); font-weight: 600; }
 
+/* ---------- картинки скинов ---------- */
+.gun.sil { display: none; }
+.noimg > .gun.sil { display: block; }
+img.gun { object-fit: contain; user-select: none; -webkit-user-drag: none; }
+.drop img.gun { height: 56px; width: 150px; filter: drop-shadow(0 4px 8px rgba(0, 0, 0, .5)); }
+.drop .gun.sil { width: 118px; height: 46px; }
+
 /* ---------- item card (upgrader style) ---------- */
 .item {
   position: relative;

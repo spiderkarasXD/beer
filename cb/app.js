@@ -119,6 +119,16 @@
     document.body.insertAdjacentHTML('afterbegin', `<svg class="sprite" aria-hidden="true"><defs>${defs.join('')}</defs></svg>`);
   }
 
+  const STEAM = 'https://community.akamai.steamstatic.com/economy/image/';
+  const imgUrl = (id, size = '256fx256f') => (SKIN_IMG[id] ? STEAM + SKIN_IMG[id] + '/' + size : '');
+  // Картинка скина со Steam; при ошибке загрузки остаётся нарисованный силуэт
+  const pic = (id, size) => {
+    const url = imgUrl(id, size);
+    const sil = gunSvg(id, 'gun sil');
+    if (!url) return sil;
+    return `<img class="gun pic" src="${url}" alt="" draggable="false" onerror="this.parentNode.classList.add('noimg');this.remove()">${sil}`;
+  };
+
   const gunSvg = (id, cls = 'gun') => {
     const s = SKIN[id];
     return `<svg class="${cls}" viewBox="0 0 120 48" aria-hidden="true"><use width="120" height="48" href="#w-${s.type}" fill="url(#sk-${s.id})" stroke="#0a0c14" stroke-width="1.1" stroke-linejoin="round"/></svg>`;
@@ -129,7 +139,8 @@
     const hero = SKIN[c.hero];
     return `<svg class="${cls}" viewBox="0 0 200 150" aria-hidden="true">
       <ellipse cx="100" cy="80" rx="96" ry="62" fill="url(#cr-${c.id})"/>
-      <g transform="translate(100 44) rotate(-14) scale(1.3) translate(-60 -24)"><use width="120" height="48" href="#w-${hero.type}" fill="url(#sk-${hero.id})" stroke="#0a0c14" stroke-width="1.1" stroke-linejoin="round"/></g>
+      <g style="display:none" transform="translate(100 44) rotate(-14) scale(1.3) translate(-60 -24)"><use width="120" height="48" href="#w-${hero.type}" fill="url(#sk-${hero.id})" stroke="#0a0c14" stroke-width="1.1" stroke-linejoin="round"/></g>
+      <image href="${imgUrl(hero.id, '360fx360f')}" x="22" y="-14" width="156" height="117" transform="rotate(-10 100 44)" preserveAspectRatio="xMidYMid meet" onerror="this.previousElementSibling.style.display='';this.remove()"/>
       <path d="M26 70H174L168 62H32Z" fill="url(#cl-${c.id})"/>
       <rect x="18" y="68" width="164" height="18" rx="4" fill="url(#cl-${c.id})" stroke="rgba(0,0,0,.4)"/>
       <rect x="22" y="84" width="156" height="56" rx="5" fill="url(#cg-${c.id})" stroke="rgba(0,0,0,.45)"/>
@@ -182,7 +193,7 @@
     return `<div class="item ${extra}" style="--rc:${RARITY[s.rarity].color}" ${attrs}>
       ${chance != null ? `<span class="ch">${(chance * 100).toFixed(chance < 0.01 ? 3 : 2)}%</span>` : ''}
       <span class="p">${rub(s.price)}</span>
-      ${gunSvg(id)}
+      ${pic(id)}
       <div class="w">${esc(s.weapon)}</div>
       <div class="s">${esc(s.skin)}</div>
     </div>`;
@@ -208,7 +219,7 @@
   function dropHtml(d) {
     const s = SKIN[d.id];
     return `<a class="drop ${d.mine ? 'mine' : ''}" href="#/case/${d.caseId}" style="--rc:${RARITY[s.rarity].color}">
-      ${gunSvg(d.id)}
+      ${pic(d.id)}
       <div class="dn">${esc(s.weapon)}<b>${esc(s.skin)}</b></div>
       <div class="who"><span>${esc(CASE[d.caseId] ? CASE[d.caseId].name : '')}</span><b>${esc(d.user)}</b><span>${rub(s.price)}</span></div>
     </a>`;
