@@ -562,7 +562,7 @@
           if (!options.includes(r)) options.push(r);
         }
         Beer.shuffle(options);
-        $('#fgWrap', el).innerHTML = `<img src="https://flagcdn.com/w640/${c[0]}.png" alt="Флаг" draggable="false">`;
+        $('#fgWrap', el).innerHTML = `<img src="assets/flags/${c[0]}.svg" alt="Флаг" draggable="false">`;
         // предзагрузка следующих не нужна — картинки маленькие
         opts.innerHTML = '';
         options.forEach((o) => {

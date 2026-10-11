@@ -237,7 +237,7 @@
 /* ---------- flags ---------- */
 .flag-stage { display: flex; flex-direction: column; align-items: center; gap: 20px; padding: 24px 16px; }
 .flag-img-wrap {
-  width: min(360px, 100%); aspect-ratio: 3 / 2;
+  width: min(360px, 100%); aspect-ratio: 4 / 3;
   display: grid; place-items: center;
   border-radius: var(--shape-l);
   background: var(--md-surface-container-highest);
