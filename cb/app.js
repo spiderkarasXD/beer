@@ -36,10 +36,14 @@
     freeAt: 0,
     bonusAt: 0,
     promos: [],
+    cashback: 0,          // накопленный кешбек с неудачных апгрейдов
     fast: false,
     st: { opened: 0, spent: 0, best: 0, bestId: null, upg: 0, upgWin: 0, battles: 0, battleWin: 0, contracts: 0 },
   }, store.get('state', {}));
   if (!S.promos) S.promos = [];
+  if (!S.cashback) S.cashback = 0;
+  if (!SKIN[S.st.bestId]) S.st.bestId = null;
+  S.inv = S.inv.filter((x) => SKIN[x.id]); // скины, которых больше нет в каталоге
   const save = () => store.set('state', S);
 
   function setBalance(v) {
@@ -100,6 +104,7 @@
   const CHEV_UP = '<svg class="chev" viewBox="0 0 70 100"><path d="M35 0 70 26V44L35 18 0 44V26Z" fill="currentColor"/><path d="M35 28 70 54V72L35 46 0 72V54Z" fill="currentColor" opacity=".7"/><path d="M35 56 70 82V100L35 74 0 100V82Z" fill="currentColor" opacity=".4"/></svg>';
   const CHEV_DOWN = '<svg class="chev" viewBox="0 0 70 100"><path d="M35 100 70 74V56L35 82 0 56V74Z" fill="currentColor"/><path d="M35 72 70 46V28L35 54 0 28V46Z" fill="currentColor" opacity=".7"/><path d="M35 44 70 18V0L35 26 0 0V18Z" fill="currentColor" opacity=".4"/></svg>';
 
+  const RCOL = { consumer: '#b0c3d9', industrial: '#5e98d9', milspec: '#4b69ff', restricted: '#8847ff', classified: '#d32ce6', covert: '#eb4b4b', gold: '#e4ae39' };
   function buildSprite() {
     const shade = (hex, k) => {
       const n = parseInt(hex.slice(1), 16);
@@ -108,7 +113,7 @@
     };
     const defs = [
       ...Object.entries(SHAPES).map(([k, p]) => `<symbol id="w-${k}" viewBox="0 0 120 48">${p}</symbol>`),
-      ...SKINS.map((s) => `<linearGradient id="sk-${s.id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${s.c1}"/><stop offset=".55" stop-color="${s.c2}"/><stop offset="1" stop-color="${shade(s.c2, 0.6)}"/></linearGradient>`),
+      ...Object.entries(RCOL).map(([k, c]) => `<linearGradient id="sk-${k}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${shade(c, 1.25)}"/><stop offset=".55" stop-color="${c}"/><stop offset="1" stop-color="${shade(c, 0.5)}"/></linearGradient>`),
       ...CASES.map((c) => `<linearGradient id="cg-${c.id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${shade(c.color, 1.08)}"/><stop offset=".6" stop-color="${shade(c.color, 0.7)}"/><stop offset="1" stop-color="${shade(c.color, 0.35)}"/></linearGradient>
          <linearGradient id="cl-${c.id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${shade(c.color, 0.55)}"/><stop offset="1" stop-color="${shade(c.color, 0.3)}"/></linearGradient>
          <radialGradient id="cr-${c.id}"><stop offset="0" stop-color="${c.color}" stop-opacity=".55"/><stop offset="1" stop-color="${c.color}" stop-opacity="0"/></radialGradient>`),
@@ -120,26 +125,30 @@
   }
 
   const STEAM = 'https://community.akamai.steamstatic.com/economy/image/';
-  const imgUrl = (id, size = '256fx256f') => (SKIN_IMG[id] ? STEAM + SKIN_IMG[id] + '/' + size : '');
+  const imgUrl = (id, size = '256fx256f') => (SKIN[id] && SKIN[id].img ? STEAM + SKIN[id].img + '/' + size : '');
   // Картинка скина со Steam; при ошибке загрузки остаётся нарисованный силуэт
-  const pic = (id, size) => {
-    const url = imgUrl(id, size);
+  const pic = (id, lazy) => {
+    const url = imgUrl(id);
     const sil = gunSvg(id, 'gun sil');
     if (!url) return sil;
-    return `<img class="gun pic" src="${url}" alt="" draggable="false" onerror="this.parentNode.classList.add('noimg');this.remove()">${sil}`;
+    return `<img class="gun pic" src="${url}" alt="" draggable="false" ${lazy ? 'loading="lazy"' : ''} onerror="this.parentNode.classList.add('noimg');this.remove()">${sil}`;
   };
 
   const gunSvg = (id, cls = 'gun') => {
     const s = SKIN[id];
-    return `<svg class="${cls}" viewBox="0 0 120 48" aria-hidden="true"><use width="120" height="48" href="#w-${s.type}" fill="url(#sk-${s.id})" stroke="#0a0c14" stroke-width="1.1" stroke-linejoin="round"/></svg>`;
+    return `<svg class="${cls}" viewBox="0 0 120 48" aria-hidden="true"><use width="120" height="48" href="#w-${s.type}" fill="url(#sk-${s.rarity})" stroke="#0a0c14" stroke-width="1.1" stroke-linejoin="round"/></svg>`;
   };
 
   // Кейс: ящик + торчащий из него самый дорогой скин
   function caseArt(c, cls = 'art') {
+    if (c.img) return `<img class="${cls} case-img" src="${STEAM + c.img}/360fx360f" alt="" loading="lazy" draggable="false" onerror="this.outerHTML=this.dataset.fb" data-fb="${esc(crateSvg(c, cls))}">`;
+    return crateSvg(c, cls);
+  }
+  function crateSvg(c, cls) {
     const hero = SKIN[c.hero];
     return `<svg class="${cls}" viewBox="0 0 200 150" aria-hidden="true">
       <ellipse cx="100" cy="80" rx="96" ry="62" fill="url(#cr-${c.id})"/>
-      <g style="display:none" transform="translate(100 44) rotate(-14) scale(1.3) translate(-60 -24)"><use width="120" height="48" href="#w-${hero.type}" fill="url(#sk-${hero.id})" stroke="#0a0c14" stroke-width="1.1" stroke-linejoin="round"/></g>
+      <g style="display:none" transform="translate(100 44) rotate(-14) scale(1.3) translate(-60 -24)"><use width="120" height="48" href="#w-${hero.type}" fill="url(#sk-${hero.rarity})" stroke="#0a0c14" stroke-width="1.1" stroke-linejoin="round"/></g>
       <image href="${imgUrl(hero.id, '360fx360f')}" x="22" y="-14" width="156" height="117" transform="rotate(-10 100 44)" preserveAspectRatio="xMidYMid meet" onerror="this.previousElementSibling.style.display='';this.remove()"/>
       <path d="M26 70H174L168 62H32Z" fill="url(#cl-${c.id})"/>
       <rect x="18" y="68" width="164" height="18" rx="4" fill="url(#cl-${c.id})" stroke="rgba(0,0,0,.4)"/>
@@ -157,27 +166,10 @@
   }
 
   /* ---------------- шансы кейсов ----------------
-     Вес предмета = цена^(-a), а скины ценой от 1 до 4 цен кейса получают
-     буст B. Параметры подбираются так, чтобы средний возврат был ~105%,
-     а кейс окупался примерно в каждом третьем открытии. */
-  const RTP = 1.05, HIT = 0.33;
+     Считаются заранее генератором cb/tools/build-catalog.mjs (поле ch):
+     средний возврат ~105%, кейс окупается примерно в каждом третьем открытии. */
   function calibrate(c) {
-    const prices = c.items.map((id) => SKIN[id].price);
-    const P = c.free ? 25 : c.price;
-    const near = prices.map((p) => p >= P && p <= P * 4);
-    const dist = (a, B) => { const ws = prices.map((p, i) => Math.pow(p, -a) * (near[i] ? B : 1)); const sum = ws.reduce((x, y) => x + y, 0); return ws.map((w) => w / sum); };
-    const ev = (ps) => ps.reduce((acc, p, i) => acc + p * prices[i], 0);
-    const hit = (ps) => ps.reduce((acc, p, i) => acc + (prices[i] >= P ? p : 0), 0);
-    const target = c.free ? 25 : P * RTP;
-    const solveA = (B) => { let lo = -2, hi = 8; for (let i = 0; i < 60; i++) { const a = (lo + hi) / 2; if (ev(dist(a, B)) > target) lo = a; else hi = a; } return (lo + hi) / 2; };
-    let B = 1, a = solveA(1);
-    if (!c.free && hit(dist(a, 1)) < HIT) {
-      let lo = 1, hi = 200;
-      for (let i = 0; i < 40; i++) { B = (lo + hi) / 2; a = solveA(B); if (hit(dist(a, B)) < HIT) lo = B; else hi = B; }
-    }
-    const ps = dist(a, B);
-    c.chances = c.items.map((id, i) => ({ id, p: ps[i] }));
-    c.ev = ev(ps);
+    c.chances = c.items.map((id, i) => ({ id, p: c.ch[i] }));
     c.hero = c.items.slice().sort((x, y) => SKIN[y].price - SKIN[x].price)[0];
   }
   CASES.forEach(calibrate);
@@ -194,12 +186,12 @@
   }
 
   /* ---------------- карточка предмета ---------------- */
-  function itemHtml(id, extra = '', attrs = '', chance = null) {
+  function itemHtml(id, extra = '', attrs = '', chance = null, lazy = false) {
     const s = SKIN[id];
     return `<div class="item ${extra}" style="--rc:${RARITY[s.rarity].color}" ${attrs}>
       ${chance != null ? `<span class="ch">${(chance * 100).toFixed(chance < 0.01 ? 3 : 2)}%</span>` : ''}
       <span class="p">${rub(s.price)}</span>
-      ${pic(id)}
+      ${pic(id, lazy)}
       <div class="w">${esc(s.weapon)}</div>
       <div class="s">${esc(s.skin)}</div>
     </div>`;
@@ -310,8 +302,19 @@
   const onLeave = (fn) => cleanup.push(fn);
 
   // ---------- главная ----------
+  const GROUPS = [
+    ['all', 'Все'], ['hits', 'Хиты'], ['cs2', 'Кейсы CS2'], ['weapons', 'Оружие'], ['knives', 'Ножи'], ['gloves', 'Перчатки'], ['rarity', 'По редкости'],
+  ];
+  const GROUP_TITLE = { free: 'Бесплатно', hits: 'Хиты CaseBeer', cs2: 'Оружейные кейсы CS2', weapons: 'Кейсы по оружию', knives: 'Ножевые кейсы', gloves: 'Перчатки', rarity: 'По редкости' };
+  function caseCard(c) {
+    return `<a class="ccard ${c.price > S.balance ? 'locked' : ''}" href="#/case/${c.id}" style="--cc:${c.color}">
+      <div class="head"><div class="nm">${esc(c.name)}</div><div class="sub">${c.items.length} предметов ${NEWC.includes(c.id) ? '<span class="badge-new">NEW</span>' : ''}</div></div>
+      ${caseArt(c)}
+      <div class="price-box">${c.free ? 'Бесплатно' : rub(c.price)}</div>
+    </a>`;
+  }
   function pageHome(el) {
-    let q = '', onlyAff = store.get('onlyAff', false);
+    let q = '', onlyAff = store.get('onlyAff', false), grp = store.get('grp', 'all');
     el.innerHTML = `
       <section class="promo">
         <div class="voucher" id="vchr"><div class="vt">%</div><div class="vb"><b>+20%</b><span>к балансу</span></div></div>
@@ -322,29 +325,34 @@
         <label class="row" style="gap:10px">Быстрый фильтр: <input class="search" id="q" placeholder="Что ищем?"></label>
         <span class="toggle ${onlyAff ? 'on' : ''}" id="aff"><i></i>Только по карману</span>
       </div>
-      <div class="title-glow"><span></span>Limited</div>
-      <div class="lim-grid" id="limGrid"></div>
-      <div class="title-glow"><span></span>Серийные кейсы</div>
-      <div class="case-grid" id="caseGrid"></div>`;
+      <div class="grp-tabs" id="grpTabs">${GROUPS.map(([k, n]) => `<button class="chip" data-g="${k}">${n}</button>`).join('')}</div>
+      <div id="limWrap"><div class="title-glow"><span></span>Limited</div><div class="lim-grid" id="limGrid"></div></div>
+      <div id="sections"></div>`;
 
     function renderCases() {
-      const match = (c) => (!q || c.name.toLowerCase().includes(q)) && (!onlyAff || c.price <= S.balance);
-      const free = CASE.free;
-      $('#limGrid', el).innerHTML = LIMITED.map((id, i) => CASE[id]).filter(match).map((c, i) => `
-        <a class="lcard" href="#/case/${c.id}" style="--cc:${c.color}">
-          <div class="top"><span class="tag">LIMITED</span><span class="tm" data-end="${limitedEnd(i)}">⏱ ${dhm(limitedEnd(i) - Date.now())}</span>${caseArt(c)}</div>
-          <div class="bot"><b>${esc(c.name)}</b><span>${rub(c.price)}</span></div>
-        </a>`).join('') || '<div class="muted">Ничего не найдено</div>';
-      const list = [free, ...PAID.filter((c) => !LIMITED.includes(c.id))].filter((c) => c.free ? !q || c.name.toLowerCase().includes(q) : match(c));
-      $('#caseGrid', el).innerHTML = list.map((c) => `
-        <a class="ccard ${c.price > S.balance ? 'locked' : ''}" href="#/case/${c.id}" style="--cc:${c.color}">
-          <div class="head"><div class="nm">${esc(c.name)}</div><div class="sub">${c.items.length} предметов ${NEWC.includes(c.id) ? '<span class="badge-new">NEW</span>' : ''}</div></div>
-          ${caseArt(c)}
-          <div class="price-box">${c.free ? 'Бесплатно' : rub(c.price)}</div>
-        </a>`).join('') || '<div class="muted">Ничего не найдено</div>';
+      $$('#grpTabs .chip', el).forEach((b) => b.classList.toggle('on', b.dataset.g === grp));
+      const match = (c) => (!q || c.name.toLowerCase().includes(q)) && (c.free || !onlyAff || c.price <= S.balance);
+      const showLim = (grp === 'all' || grp === 'hits');
+      $('#limWrap', el).hidden = !showLim;
+      if (showLim) {
+        $('#limGrid', el).innerHTML = LIMITED.map((id) => CASE[id]).filter(match).map((c, i) => `
+          <a class="lcard" href="#/case/${c.id}" style="--cc:${c.color}">
+            <div class="top"><span class="tag">LIMITED</span><span class="tm" data-end="${limitedEnd(i)}">⏱ ${dhm(limitedEnd(i) - Date.now())}</span>${caseArt(c)}</div>
+            <div class="bot"><b>${esc(c.name)}</b><span>${rub(c.price)}</span></div>
+          </a>`).join('') || '<div class="muted">Ничего не найдено</div>';
+      }
+      const order = ['free', 'hits', 'cs2', 'weapons', 'knives', 'gloves', 'rarity'];
+      const groups = grp === 'all' ? order : grp === 'hits' ? ['free', 'hits'] : [grp];
+      const html = groups.map((g) => {
+        const list = CASES.filter((c) => c.group === g && !LIMITED.includes(c.id) && match(c));
+        if (!list.length) return '';
+        return `<div class="title-glow"><span></span>${GROUP_TITLE[g]} <small class="muted">· ${list.length}</small></div><div class="case-grid">${list.map(caseCard).join('')}</div>`;
+      }).join('');
+      $('#sections', el).innerHTML = html || '<div class="muted" style="text-align:center;padding:40px">Ничего не найдено</div>';
     }
     $('#q', el).addEventListener('input', (e) => { q = e.target.value.trim().toLowerCase(); renderCases(); });
     $('#aff', el).onclick = (e) => { onlyAff = !onlyAff; store.set('onlyAff', onlyAff); e.currentTarget.classList.toggle('on', onlyAff); renderCases(); };
+    $('#grpTabs', el).addEventListener('click', (e) => { const b = e.target.closest('[data-g]'); if (!b) return; grp = b.dataset.g; store.set('grp', grp); renderCases(); });
     $('#vchr', el).onclick = openTopUp;
     $('#promoBtn', el).onclick = () => applyPromo('BEER-20');
 
@@ -357,7 +365,6 @@
     onLeave(() => clearInterval(t));
     renderCases();
   }
-
   // ---------- кейс ----------
   function pageCase(el, id) {
     const c = CASE[id];
@@ -377,7 +384,7 @@
       <div class="reels" id="reels"></div>
       <div class="open-bar"><button class="btn xl" id="openBtn"></button></div>
       <div class="title-glow"><span></span>Содержимое кейса</div>
-      <div class="item-grid small">${c.chances.slice().sort((a, b) => SKIN[b.id].price - SKIN[a.id].price).map((ch) => itemHtml(ch.id, '', '', ch.p)).join('')}</div>`;
+      <div class="item-grid small">${c.chances.slice().sort((a, b) => SKIN[b.id].price - SKIN[a.id].price).map((ch) => itemHtml(ch.id, '', '', ch.p, true)).join('')}</div>`;
 
     const reels = $('#reels', el);
     const btn = $('#openBtn', el);
@@ -454,11 +461,12 @@
 
   // ---------- апгрейд ----------
   let upgPreselect = null;
+  const CASHBACK = 0.1; // 10% от проигранной ставки возвращается кешбеком
   const MAX_CHANCE = 0.9, HOUSE = 1; // шанс = ставка / цена цели, без комиссии, максимум 90%
   function pageUpgrade(el) {
     const sel = new Set((upgPreselect || []).filter((u) => S.inv.some((x) => x.u === u)));
     upgPreselect = null;
-    let addBal = 0, target = null, busy = false, rot = 0, q = '', from = 0, to = 0, invDesc = true;
+    let addBal = 0, target = null, busy = false, rot = 0, q = '', from = 0, to = 0, invDesc = true, limit = 120;
     const ticks = Array.from({ length: 72 }, (_, i) => {
       const a = (i / 72) * Math.PI * 2, big = i % 9 === 0;
       const r1 = big ? 146 : 150, r2 = 158;
@@ -466,7 +474,8 @@
     }).join('');
     el.innerHTML = `
       <div class="h1">${icon('upgrade')}Апгрейд</div>
-      <div class="upg-tools"><button class="icon-btn" id="fastBtn" title="Быстро">${icon('bolt')}</button></div>
+      <div class="upg-tools"><button class="icon-btn" id="fastBtn" title="Быстро">${icon('bolt')}</button><span class="spacer"></span>
+        <div class="cashback" id="cbBox"><span class="cb-ico">↺</span><span>Кешбек <b>${Math.round(CASHBACK * 100)}%</b> с неудачных апгрейдов</span><b class="cb-sum" id="cbSum"></b><button class="btn green sm" id="cbClaim">Забрать</button></div></div>
       <div class="upg-top">
         <div class="upg-box"><div class="bh">Выберите предметы и/или баланс для использования<small>Можно выбрать несколько предметов</small></div><div class="bb" id="srcBox"></div></div>
         <div class="gauge" id="gauge">
@@ -528,7 +537,10 @@
       if (target && SKIN[target].price <= st) target = null;
       $('#tgtBox', el).innerHTML = target ? itemHtml(target) : `${ghost}${CHEV_UP}`;
       const list = SKINS.filter((s) => s.price > st && (!from || s.price >= from) && (!to || s.price <= to) && (!q || (s.weapon + ' ' + s.skin).toLowerCase().includes(q))).sort((a, b) => a.price - b.price);
-      $('#tgtGrid', el).innerHTML = list.map((s) => itemHtml(s.id, 'click' + (s.id === target ? ' sel' : ''), `data-t="${s.id}"`)).join('') || '<div class="muted">Ничего не найдено</div>';
+      $('#tgtGrid', el).innerHTML = (list.slice(0, limit).map((s) => itemHtml(s.id, 'click' + (s.id === target ? ' sel' : ''), `data-t="${s.id}"`, null, true)).join('') || '<div class="muted">Ничего не найдено</div>')
+        + (list.length > limit ? `<button class="btn ghost block" id="more" style="grid-column:1/-1">Показать ещё (${list.length - limit})</button>` : '');
+      $('#cbSum', el).textContent = rub(S.cashback);
+      $('#cbClaim', el).disabled = S.cashback < 1;
       const ch = chance();
       $('#chance', el).textContent = (ch * 100).toFixed(2) + '%';
       drawArc(ch);
@@ -542,7 +554,11 @@
       if (sel.has(u)) sel.delete(u); else { if (sel.size >= 6) return toast('Максимум 6 предметов'); sel.add(u); }
       render();
     });
-    $('#tgtGrid', el).addEventListener('click', (e) => { const it = e.target.closest('[data-t]'); if (!it || busy) return; target = it.dataset.t; render(); });
+    $('#tgtGrid', el).addEventListener('click', (e) => {
+      if (e.target.closest('#more')) { limit += 120; render(); return; }
+      const it = e.target.closest('[data-t]'); if (!it || busy) return; target = it.dataset.t; render();
+    });
+    $('#cbClaim', el).onclick = () => { if (S.cashback < 1) return; const v = Math.floor(S.cashback); S.cashback -= v; setBalance(S.balance + v); toast(`Кешбек ${rub(v)} зачислен на баланс`, 'good'); render(); };
     $('#mults', el).addEventListener('click', (e) => {
       const b = e.target.closest('[data-m]'); if (!b || busy) return;
       const st = stake(); if (!st) return toast('Сначала выбери предметы или добавь баланс');
@@ -552,9 +568,9 @@
       if (cand) { target = cand.id; render(); }
     });
     $('#addBal', el).addEventListener('input', (e) => { addBal = Math.max(0, Math.min(S.balance, Math.floor(+e.target.value || 0))); render(); });
-    $('#q', el).addEventListener('input', (e) => { q = e.target.value.trim().toLowerCase(); render(); });
-    $('#pFrom', el).addEventListener('input', (e) => { from = +e.target.value || 0; render(); });
-    $('#pTo', el).addEventListener('input', (e) => { to = +e.target.value || 0; render(); });
+    $('#q', el).addEventListener('input', (e) => { q = e.target.value.trim().toLowerCase(); limit = 120; render(); });
+    $('#pFrom', el).addEventListener('input', (e) => { from = +e.target.value || 0; limit = 120; render(); });
+    $('#pTo', el).addEventListener('input', (e) => { to = +e.target.value || 0; limit = 120; render(); });
     $('#invSort', el).onclick = () => { invDesc = !invDesc; render(); };
 
     $('#upgBtn', el).onclick = async () => {
@@ -569,8 +585,9 @@
       removeItems([...sel]);
       setBalance(S.balance - addBal);
       S.st.upg++;
-      let wonItem = null;
+      let wonItem = null, back = 0;
       if (win) { wonItem = addItem(target); S.st.upgWin++; }
+      else { back = Math.round(st * CASHBACK * 100) / 100; S.cashback += back; }
       save();
       const g = $('#gauge', el);
       g.classList.remove('win', 'lose');
@@ -588,7 +605,7 @@
       el.querySelector('.bal-slider .mx b').textContent = rub(S.balance);
       busy = false;
       if (win) { toast(`Апгрейд успешен: ${SKIN[target].weapon} | ${SKIN[target].skin}`, 'good'); myDrop(target, 'high'); sel.add(wonItem.u); }
-      else toast('Не повезло — апгрейд не удался', 'bad');
+      else toast(`Не повезло. Кешбек +${rub(back)} — забери его кнопкой сверху`, 'bad');
       target = null;
       render();
     };
@@ -625,6 +642,7 @@
           <div class="seg" id="bSize">${[2, 3, 4].map((n) => `<button data-n="${n}">${n} игрока</button>`).join('')}</div>
           <div class="seg" id="bMode"><button data-m="normal">Обычный</button><button data-m="crazy">Crazy</button></div>
         </div>
+        <input class="search" id="bq" placeholder="Поиск кейса" style="margin-bottom:10px;width:240px">
         <div class="picker" id="bPicker">${PAID.map((c) => `<div class="pick-case" data-c="${c.id}">${caseArt(c)}<div class="nm">${esc(c.name)}</div><div class="pr">${rub(c.price)}</div><div class="cnt"><button data-d="-1">−</button><b>0</b><button data-d="1">+</button></div></div>`).join('')}</div>
         <div class="row" style="margin-top:14px"><span class="muted" id="bInfo"></span><span class="spacer"></span><button class="btn lg" id="bCreate">Создать</button></div>
         <div class="muted" style="font-size:13px;margin-top:8px">Все игроки открывают одни и те же кейсы. Победитель забирает все предметы. В режиме Crazy побеждает тот, у кого сумма меньше.</div>
@@ -648,6 +666,10 @@
       $$('#bMode button', el).forEach((b) => b.classList.toggle('on', b.dataset.m === mode));
       return { cases, price };
     }
+    $('#bq', el).addEventListener('input', (e) => {
+      const v = e.target.value.trim().toLowerCase();
+      $$('.pick-case', el).forEach((p) => { p.hidden = !!v && !CASE[p.dataset.c].name.toLowerCase().includes(v); });
+    });
     $('#bPicker', el).addEventListener('click', (e) => {
       const b = e.target.closest('[data-d]'); if (!b) return;
       const id = b.closest('.pick-case').dataset.c;
@@ -855,6 +877,7 @@
           <div class="panel"><b>${S.st.upgWin}/${S.st.upg}</b><span>апгрейдов успешно</span></div>
           <div class="panel"><b>${S.st.battleWin}/${S.st.battles}</b><span>батлов выиграно</span></div>
           <div class="panel"><b>${S.st.contracts}</b><span>контрактов</span></div>
+          <div class="panel"><b>${rub(S.cashback)}</b><span>кешбек к выплате (<a href="#/upgrade">забрать</a>)</span></div>
           <div class="panel"><b>${rub(S.st.best)}</b><span>лучший дроп${S.st.bestId ? ': ' + esc(SKIN[S.st.bestId].weapon + ' | ' + SKIN[S.st.bestId].skin) : ''}</span></div>
         </div>
         <div class="row" style="margin:26px 0 14px"><div class="cond" style="font-size:22px">Инвентарь · ${S.inv.length} шт. · ${rub(invSum)}</div><span class="spacer"></span>
