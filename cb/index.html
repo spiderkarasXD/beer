@@ -4,32 +4,36 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>CaseBeer — кейсы, апгрейд, батлы</title>
-  <meta name="theme-color" content="#0b0f1a">
+  <meta name="theme-color" content="#0e1019">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📦</text></svg>">
+  <link rel="preload" href="../assets/fonts/oswald-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../assets/fonts/oswald-cyrillic.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="ticker">
-    <div class="ticker-label"><span class="dot"></span>Live</div>
-    <div class="ticker-track" id="tickerTrack"></div>
+  <aside class="side">
+    <div class="side-top"><a class="logo" href="#/"><span class="lt">CASE<i>🍺</i><b>BEER</b></span><span class="ls">у нас выпивают</span></a></div>
+    <div class="online">Online <b id="onlineSide">—</b></div>
+    <div class="side-tabs"><button data-t="all">Все</button><button data-t="top">🔥 Топ</button></div>
+    <div class="drops" id="drops"></div>
+  </aside>
+
+  <div class="main">
+    <header class="header">
+      <a class="logo mlogo" href="#/"><span class="lt">CASE<i>🍺</i><b>BEER</b></span></a>
+      <nav class="nav" id="nav"></nav>
+      <div class="hdr-online"><span id="peopleIco"></span><span id="onlineHead">—</span></div>
+      <span class="spacer"></span>
+      <a class="user" href="#/profile" title="Профиль">
+        <span class="ava" id="ava">?</span>
+        <span class="hi"><span>Привет,</span><b id="nickT">—</b>На счету: <span class="bal" id="balanceText">0 ₽</span></span>
+      </a>
+      <button class="wallet-btn" id="topup" title="Пополнить"></button>
+    </header>
+
+    <main class="page" id="page"></main>
+    <div class="footer">CaseBeer — игра на виртуальные рубли. Настоящие деньги не принимаются и не выводятся. · <a href="../">Beer Translate</a></div>
   </div>
-
-  <header class="header">
-    <a class="logo" href="#/"><span class="mug">🍺</span>Case<b>Beer</b></a>
-    <nav class="nav" id="nav"></nav>
-    <div class="stats-mini">
-      <div><b id="statOnline">—</b>онлайн</div>
-      <div><b id="statOpened">—</b>открыто</div>
-    </div>
-    <div class="wallet">
-      <div class="balance" id="balance"><span id="balanceText">0 ₽</span></div>
-      <button class="btn" id="topup">+</button>
-      <a class="avatar" id="avatar" href="#/profile" title="Профиль">?</a>
-    </div>
-  </header>
-
-  <main class="page" id="page"></main>
-  <div class="footer">CaseBeer — игра на виртуальные рубли. Настоящие деньги не принимаются и не выводятся. · <a href="../">Beer Translate</a></div>
 
   <nav class="mnav" id="mnav"></nav>
   <div class="toasts" id="toasts"></div>
