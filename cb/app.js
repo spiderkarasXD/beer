@@ -157,21 +157,27 @@
   }
 
   /* ---------------- шансы кейсов ----------------
-     Вес предмета ∝ цена^(-a). Параметр a подбирается так,
-     чтобы матожидание дропа было ~90% цены кейса. */
-  const RTP = 0.9;
+     Вес предмета = цена^(-a), а скины ценой от 1 до 4 цен кейса получают
+     буст B. Параметры подбираются так, чтобы средний возврат был ~105%,
+     а кейс окупался примерно в каждом третьем открытии. */
+  const RTP = 1.05, HIT = 0.33;
   function calibrate(c) {
     const prices = c.items.map((id) => SKIN[id].price);
-    const target = c.free ? 25 : c.price * RTP;
-    const ev = (a) => { let num = 0, den = 0; prices.forEach((p) => { const w = Math.pow(p, -a); num += w * p; den += w; }); return num / den; };
-    let lo = 0, hi = 8, a = 0;
-    if (ev(0) <= target) a = 0;
-    else if (ev(hi) >= target) a = hi;
-    else { for (let i = 0; i < 60; i++) { a = (lo + hi) / 2; if (ev(a) > target) lo = a; else hi = a; } }
-    const ws = prices.map((p) => Math.pow(p, -a));
-    const sum = ws.reduce((x, y) => x + y, 0);
-    c.chances = c.items.map((id, i) => ({ id, p: ws[i] / sum }));
-    c.ev = ev(a);
+    const P = c.free ? 25 : c.price;
+    const near = prices.map((p) => p >= P && p <= P * 4);
+    const dist = (a, B) => { const ws = prices.map((p, i) => Math.pow(p, -a) * (near[i] ? B : 1)); const sum = ws.reduce((x, y) => x + y, 0); return ws.map((w) => w / sum); };
+    const ev = (ps) => ps.reduce((acc, p, i) => acc + p * prices[i], 0);
+    const hit = (ps) => ps.reduce((acc, p, i) => acc + (prices[i] >= P ? p : 0), 0);
+    const target = c.free ? 25 : P * RTP;
+    const solveA = (B) => { let lo = -2, hi = 8; for (let i = 0; i < 60; i++) { const a = (lo + hi) / 2; if (ev(dist(a, B)) > target) lo = a; else hi = a; } return (lo + hi) / 2; };
+    let B = 1, a = solveA(1);
+    if (!c.free && hit(dist(a, 1)) < HIT) {
+      let lo = 1, hi = 200;
+      for (let i = 0; i < 40; i++) { B = (lo + hi) / 2; a = solveA(B); if (hit(dist(a, B)) < HIT) lo = B; else hi = B; }
+    }
+    const ps = dist(a, B);
+    c.chances = c.items.map((id, i) => ({ id, p: ps[i] }));
+    c.ev = ev(ps);
     c.hero = c.items.slice().sort((x, y) => SKIN[y].price - SKIN[x].price)[0];
   }
   CASES.forEach(calibrate);
@@ -448,7 +454,7 @@
 
   // ---------- апгрейд ----------
   let upgPreselect = null;
-  const MAX_CHANCE = 0.75, HOUSE = 0.95;
+  const MAX_CHANCE = 0.9, HOUSE = 1; // шанс = ставка / цена цели, без комиссии, максимум 90%
   function pageUpgrade(el) {
     const sel = new Set((upgPreselect || []).filter((u) => S.inv.some((x) => x.u === u)));
     upgPreselect = null;
@@ -479,7 +485,7 @@
       <div class="upg-under">
         <div class="bal-slider"><span class="lb">Добавить баланс</span><div class="mid"><b id="addBalT">0 ₽</b><input type="range" id="addBal" min="0" max="${S.balance}" step="1" value="0"></div><div class="mx">Макс.<b>${rub(S.balance)}</b></div></div>
         <button class="btn xl block" id="upgBtn">${icon('upgrade')} Апгрейд</button>
-        <div class="mults" id="mults">${['x1.5', 'x2', 'x5', 'x10', '30%', '50%', '75%'].map((m) => `<button class="chip" data-m="${m}">${m}</button>`).join('')}</div>
+        <div class="mults" id="mults">${['x1.5', 'x2', 'x5', 'x10', '30%', '50%', '75%', '90%'].map((m) => `<button class="chip" data-m="${m}">${m}</button>`).join('')}</div>
       </div>
       <div class="upg-bottom">
         <div class="ibox"><div class="ih"><span class="t">${icon('box')}Мои предметы</span><span class="spacer"></span><button class="icon-btn" id="invSort" title="Сортировка">${icon('sort')}</button></div><div class="ib"><div class="item-grid small" id="invGrid"></div></div></div>
@@ -811,8 +817,8 @@
     $('#cGo', el).onclick = async () => {
       if (busy || slots.length < 3) return;
       const s = sum();
-      // множитель: 78% — от ×0.25 до ×1, 22% — от ×1 до ×4 (лог-равномерно) → в среднем ~×0.9
-      const m = rand() < 0.78 ? Math.pow(4, rand()) / 4 : Math.pow(4, rand());
+      // множитель: 69% — от ×0.25 до ×1, 31% — от ×1 до ×4 (лог-равномерно) → в среднем ~×1.05
+      const m = rand() < 0.69 ? Math.pow(4, rand()) / 4 : Math.pow(4, rand());
       const want = s * m;
       const inRange = SKINS.filter((x) => x.price >= s * 0.25 && x.price <= s * 4);
       const pool = inRange.length ? inRange : SKINS;
