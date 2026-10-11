@@ -516,3 +516,14 @@ input[type=range]::-moz-range-thumb { width: 18px; height: 18px; border: 0; bord
   .mnav a svg { width: 22px; height: 22px; }
   .mnav a.active { color: var(--yellow); }
 }
+
+/* ---------- каталог: вкладки, картинки кейсов, кешбек ---------- */
+.grp-tabs { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; margin: 16px 0 0; }
+img.case-img { object-fit: contain; display: block; }
+.ccard img.case-img { aspect-ratio: 4 / 3; }
+.title-glow small { font-family: "Roboto", sans-serif; font-size: 13px; text-transform: none; letter-spacing: 0; }
+.cashback { display: flex; align-items: center; gap: 10px; padding: 6px 6px 6px 14px; border-radius: 8px; background: rgba(34, 210, 106, .08); border: 1px solid rgba(34, 210, 106, .35); font-size: 13px; }
+.cashback .cb-ico { font-size: 18px; color: var(--green); font-weight: 900; }
+.cashback b { color: var(--green); }
+.cashback .cb-sum { font-family: var(--cond); font-size: 18px; color: var(--text); min-width: 60px; text-align: right; }
+.upg-tools { align-items: center; flex-wrap: wrap; }

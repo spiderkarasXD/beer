@@ -1,0 +1,619 @@
+{
+ "legacySkins": [
+  {
+   "id": "p250-sand",
+   "name": "P250 | Sand Dune",
+   "price": 3
+  },
+  {
+   "id": "bizon-sand",
+   "name": "PP-Bizon | Sand Dashed",
+   "price": 3
+  },
+  {
+   "id": "g3-desert",
+   "name": "G3SG1 | Desert Storm",
+   "price": 4
+  },
+  {
+   "id": "mp9-sand",
+   "name": "MP9 | Sand Dashed",
+   "price": 4
+  },
+  {
+   "id": "nova-pred",
+   "name": "Nova | Predator",
+   "price": 5
+  },
+  {
+   "id": "ump-urban",
+   "name": "UMP-45 | Urban DDPAT",
+   "price": 6
+  },
+  {
+   "id": "sg-waves",
+   "name": "SG 553 | Waves Perforated",
+   "price": 7
+  },
+  {
+   "id": "mag7-metal",
+   "name": "MAG-7 | Metallic DDPAT",
+   "price": 9
+  },
+  {
+   "id": "tec9-tornado",
+   "name": "Tec-9 | Tornado",
+   "price": 12
+  },
+  {
+   "id": "glock-bunsen",
+   "name": "Glock-18 | Bunsen Burner",
+   "price": 22
+  },
+  {
+   "id": "mp7-armor",
+   "name": "MP7 | Armor Core",
+   "price": 18
+  },
+  {
+   "id": "p90-elite",
+   "name": "P90 | Elite Build",
+   "price": 24
+  },
+  {
+   "id": "five-scumb",
+   "name": "Five-SeveN | Scumbria",
+   "price": 30
+  },
+  {
+   "id": "usp-torque",
+   "name": "USP-S | Torque",
+   "price": 42
+  },
+  {
+   "id": "m4s-flash",
+   "name": "M4A1-S | Flashback",
+   "price": 60
+  },
+  {
+   "id": "famas-mecha",
+   "name": "FAMAS | Mecha Industries",
+   "price": 85
+  },
+  {
+   "id": "ak-elite",
+   "name": "AK-47 | Elite Build",
+   "price": 110
+  },
+  {
+   "id": "p250-asii",
+   "name": "P250 | Asiimov",
+   "price": 170
+  },
+  {
+   "id": "usp-cortex",
+   "name": "USP-S | Cortex",
+   "price": 220
+  },
+  {
+   "id": "ak-phantom",
+   "name": "AK-47 | Phantom Disruptor",
+   "price": 260
+  },
+  {
+   "id": "deagle-mecha",
+   "name": "Desert Eagle | Mecha Industries",
+   "price": 300
+  },
+  {
+   "id": "awp-atheris",
+   "name": "AWP | Atheris",
+   "price": 380
+  },
+  {
+   "id": "m4-daimyo",
+   "name": "M4A4 | Evil Daimyo",
+   "price": 420
+  },
+  {
+   "id": "glock-water",
+   "name": "Glock-18 | Water Elemental",
+   "price": 520
+  },
+  {
+   "id": "m4s-hyper",
+   "name": "M4A1-S | Hyper Beast",
+   "price": 2100
+  },
+  {
+   "id": "ak-neon",
+   "name": "AK-47 | Neon Rider",
+   "price": 2600
+  },
+  {
+   "id": "deagle-red",
+   "name": "Desert Eagle | Code Red",
+   "price": 2900
+  },
+  {
+   "id": "awp-hyper",
+   "name": "AWP | Hyper Beast",
+   "price": 3400
+  },
+  {
+   "id": "usp-kill",
+   "name": "USP-S | Kill Confirmed",
+   "price": 4800
+  },
+  {
+   "id": "ak-blood",
+   "name": "AK-47 | Bloodsport",
+   "price": 5200
+  },
+  {
+   "id": "m4-asii",
+   "name": "M4A4 | Asiimov",
+   "price": 12000
+  },
+  {
+   "id": "awp-asii",
+   "name": "AWP | Asiimov",
+   "price": 14000
+  },
+  {
+   "id": "ak-vulcan",
+   "name": "AK-47 | Vulcan",
+   "price": 21000
+  },
+  {
+   "id": "awp-light",
+   "name": "AWP | Lightning Strike",
+   "price": 38000
+  },
+  {
+   "id": "ak-serpent",
+   "name": "AK-47 | Fire Serpent",
+   "price": 95000
+  },
+  {
+   "id": "m4-howl",
+   "name": "M4A4 | Howl",
+   "price": 350000
+  },
+  {
+   "id": "awp-dlore",
+   "name": "AWP | Dragon Lore",
+   "price": 900000
+  },
+  {
+   "id": "navaja-sl",
+   "name": "★ Navaja Knife | Slaughter",
+   "price": 14000
+  },
+  {
+   "id": "flip-auto",
+   "name": "★ Flip Knife | Autotronic",
+   "price": 35000
+  },
+  {
+   "id": "bay-tiger",
+   "name": "★ Bayonet | Tiger Tooth",
+   "price": 60000
+  },
+  {
+   "id": "kara-doppler",
+   "name": "★ Karambit | Doppler",
+   "price": 95000
+  },
+  {
+   "id": "talon-marble",
+   "name": "★ Talon Knife | Marble Fade",
+   "price": 110000
+  },
+  {
+   "id": "m9-lore",
+   "name": "★ M9 Bayonet | Lore",
+   "price": 120000
+  },
+  {
+   "id": "spec-kimono",
+   "name": "★ Specialist Gloves | Crimson Kimono",
+   "price": 130000
+  },
+  {
+   "id": "bfly-fade",
+   "name": "★ Butterfly Knife | Fade",
+   "price": 180000
+  },
+  {
+   "id": "sport-vice",
+   "name": "★ Sport Gloves | Vice",
+   "price": 210000
+  },
+  {
+   "id": "kara-emerald",
+   "name": "★ Karambit | Gamma Doppler Emerald",
+   "price": 1200000
+  },
+  {
+   "id": "ak-redline",
+   "name": "AK-47 | Redline",
+   "price": 750
+  },
+  {
+   "id": "m4s-decim",
+   "name": "M4A1-S | Decimator",
+   "price": 950
+  },
+  {
+   "id": "usp-neo",
+   "name": "USP-S | Neo-Noir",
+   "price": 1300
+  },
+  {
+   "id": "awp-redline",
+   "name": "AWP | Redline",
+   "price": 1600
+  },
+  {
+   "id": "deagle-print",
+   "name": "Desert Eagle | Printstream",
+   "price": 1900
+  },
+  {
+   "id": "m4-neo",
+   "name": "M4A4 | Neo-Noir",
+   "price": 2400
+  },
+  {
+   "id": "awp-neo",
+   "name": "AWP | Neo-Noir",
+   "price": 3800
+  },
+  {
+   "id": "ak-asiimov",
+   "name": "AK-47 | Asiimov",
+   "price": 4200
+  },
+  {
+   "id": "m4s-print",
+   "name": "M4A1-S | Printstream",
+   "price": 6500
+  },
+  {
+   "id": "awp-contain",
+   "name": "AWP | Containment Breach",
+   "price": 7500
+  },
+  {
+   "id": "ak-empress",
+   "name": "AK-47 | The Empress",
+   "price": 8500
+  },
+  {
+   "id": "glock-fade",
+   "name": "Glock-18 | Fade",
+   "price": 9000
+  },
+  {
+   "id": "deagle-blaze",
+   "name": "Desert Eagle | Blaze",
+   "price": 9500
+  },
+  {
+   "id": "daggers-safari",
+   "name": "★ Shadow Daggers | Safari Mesh",
+   "price": 7500
+  },
+  {
+   "id": "gut-night",
+   "name": "★ Gut Knife | Night",
+   "price": 9000
+  },
+  {
+   "id": "huntsman-sc",
+   "name": "★ Huntsman Knife | Scorched",
+   "price": 11000
+  },
+  {
+   "id": "five-monkey",
+   "name": "Five-SeveN | Monkey Business",
+   "price": 75
+  },
+  {
+   "id": "p2000-fire",
+   "name": "P2000 | Fire Elemental",
+   "price": 140
+  }
+ ],
+ "customCases": [
+  {
+   "id": "free",
+   "name": "Бесплатный",
+   "price": 0,
+   "color": "#2fd67b",
+   "icon": "🎁",
+   "free": true,
+   "items": [
+    "p250-sand",
+    "bizon-sand",
+    "g3-desert",
+    "mp9-sand",
+    "nova-pred",
+    "ump-urban",
+    "sg-waves",
+    "mag7-metal",
+    "glock-bunsen",
+    "usp-torque",
+    "p250-asii"
+   ]
+  },
+  {
+   "id": "beer",
+   "name": "Пивной старт",
+   "price": 19,
+   "color": "#ffc94d",
+   "icon": "🍺",
+   "free": false,
+   "items": [
+    "p250-sand",
+    "bizon-sand",
+    "g3-desert",
+    "mp9-sand",
+    "nova-pred",
+    "ump-urban",
+    "sg-waves",
+    "mag7-metal",
+    "tec9-tornado",
+    "glock-bunsen",
+    "p90-elite",
+    "usp-torque",
+    "ak-elite",
+    "ak-phantom"
+   ]
+  },
+  {
+   "id": "pistol",
+   "name": "Пистолетный",
+   "price": 49,
+   "color": "#b0c3d9",
+   "icon": "🔫",
+   "free": false,
+   "items": [
+    "tec9-tornado",
+    "glock-bunsen",
+    "five-scumb",
+    "usp-torque",
+    "five-monkey",
+    "p2000-fire",
+    "p250-asii",
+    "usp-cortex",
+    "deagle-mecha",
+    "glock-water",
+    "usp-neo",
+    "deagle-print",
+    "deagle-red",
+    "usp-kill",
+    "glock-fade",
+    "deagle-blaze"
+   ]
+  },
+  {
+   "id": "milspec",
+   "name": "Армейский",
+   "price": 99,
+   "color": "#4b69ff",
+   "icon": "🪖",
+   "free": false,
+   "items": [
+    "tec9-tornado",
+    "mp7-armor",
+    "glock-bunsen",
+    "p90-elite",
+    "five-scumb",
+    "usp-torque",
+    "m4s-flash",
+    "famas-mecha",
+    "ak-elite",
+    "p250-asii",
+    "ak-phantom",
+    "awp-atheris",
+    "m4-daimyo",
+    "ak-redline",
+    "m4s-hyper"
+   ]
+  },
+  {
+   "id": "ak",
+   "name": "AK-47",
+   "price": 249,
+   "color": "#eb4b4b",
+   "icon": "🔥",
+   "free": false,
+   "items": [
+    "m4s-flash",
+    "famas-mecha",
+    "ak-elite",
+    "ak-phantom",
+    "m4-daimyo",
+    "ak-redline",
+    "m4s-decim",
+    "ak-neon",
+    "ak-asiimov",
+    "ak-blood",
+    "ak-empress",
+    "ak-vulcan",
+    "ak-serpent"
+   ]
+  },
+  {
+   "id": "awp",
+   "name": "AWP",
+   "price": 399,
+   "color": "#8847ff",
+   "icon": "🎯",
+   "free": false,
+   "items": [
+    "usp-torque",
+    "m4s-flash",
+    "famas-mecha",
+    "awp-atheris",
+    "glock-water",
+    "awp-redline",
+    "awp-hyper",
+    "awp-neo",
+    "awp-contain",
+    "awp-asii",
+    "awp-light",
+    "awp-dlore"
+   ]
+  },
+  {
+   "id": "covert",
+   "name": "Тайный",
+   "price": 990,
+   "color": "#d32ce6",
+   "icon": "💀",
+   "free": false,
+   "items": [
+    "ak-elite",
+    "usp-cortex",
+    "awp-atheris",
+    "m4-daimyo",
+    "ak-redline",
+    "m4s-decim",
+    "usp-neo",
+    "deagle-print",
+    "m4-neo",
+    "ak-neon",
+    "ak-asiimov",
+    "m4s-print",
+    "m4-asii",
+    "awp-asii",
+    "ak-vulcan",
+    "ak-serpent"
+   ]
+  },
+  {
+   "id": "knife",
+   "name": "Ножевой",
+   "price": 1499,
+   "color": "#e4ae39",
+   "icon": "🔪",
+   "free": false,
+   "items": [
+    "p250-asii",
+    "ak-phantom",
+    "glock-water",
+    "ak-redline",
+    "usp-neo",
+    "deagle-print",
+    "m4-neo",
+    "deagle-red",
+    "daggers-safari",
+    "gut-night",
+    "huntsman-sc",
+    "navaja-sl",
+    "flip-auto",
+    "bay-tiger",
+    "kara-doppler",
+    "talon-marble",
+    "m9-lore",
+    "bfly-fade"
+   ]
+  },
+  {
+   "id": "gloves",
+   "name": "Перчатки",
+   "price": 2999,
+   "color": "#2fd67b",
+   "icon": "🧤",
+   "free": false,
+   "items": [
+    "m4-daimyo",
+    "glock-water",
+    "ak-redline",
+    "m4s-decim",
+    "usp-neo",
+    "m4s-hyper",
+    "awp-hyper",
+    "ak-blood",
+    "m4s-print",
+    "ak-empress",
+    "m4-asii",
+    "flip-auto",
+    "spec-kimono",
+    "sport-vice"
+   ]
+  },
+  {
+   "id": "high",
+   "name": "Хайроллер",
+   "price": 9999,
+   "color": "#ff4d5e",
+   "icon": "💎",
+   "free": false,
+   "items": [
+    "usp-neo",
+    "deagle-print",
+    "m4s-hyper",
+    "ak-neon",
+    "deagle-red",
+    "awp-hyper",
+    "ak-asiimov",
+    "usp-kill",
+    "ak-blood",
+    "m4s-print",
+    "awp-contain",
+    "ak-empress",
+    "glock-fade",
+    "deagle-blaze",
+    "m4-asii",
+    "awp-asii",
+    "ak-vulcan",
+    "bay-tiger",
+    "kara-doppler",
+    "ak-serpent",
+    "m9-lore",
+    "bfly-fade",
+    "sport-vice",
+    "m4-howl"
+   ]
+  },
+  {
+   "id": "dlore",
+   "name": "Драконий",
+   "price": 49999,
+   "color": "#ff9f1a",
+   "icon": "🐲",
+   "free": false,
+   "items": [
+    "ak-blood",
+    "m4s-print",
+    "awp-contain",
+    "daggers-safari",
+    "ak-empress",
+    "gut-night",
+    "glock-fade",
+    "deagle-blaze",
+    "huntsman-sc",
+    "m4-asii",
+    "navaja-sl",
+    "awp-asii",
+    "ak-vulcan",
+    "flip-auto",
+    "awp-light",
+    "bay-tiger",
+    "kara-doppler",
+    "talon-marble",
+    "m9-lore",
+    "spec-kimono",
+    "bfly-fade",
+    "sport-vice",
+    "m4-howl",
+    "awp-dlore",
+    "kara-emerald"
+   ]
+  }
+ ]
+}
