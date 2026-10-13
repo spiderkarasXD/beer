@@ -14,7 +14,7 @@
   const LUCK = [
     { id: 'plinko', title: 'Плинко', icon: 'blur_on', cls: 'c1', desc: 'Шарик падает через штырьки. До ×1000 на высоком риске.' },
     { id: 'crash', title: 'Ракетка', icon: 'rocket_launch', cls: 'c4', desc: 'Множитель растёт, пока ракета не взорвётся. Успей забрать!' },
-    { id: 'slots', title: 'Барабаны', icon: 'luck', cls: 'c2', desc: 'Три барабана, кофейный джекпот ×500.' },
+    { id: 'slots', title: 'Барабаны', icon: 'payments', cls: 'c2', desc: 'Три барабана, кофейный джекпот ×500.' },
     { id: 'roulette', title: 'Колесо', icon: 'motion_photos_on', cls: 'c3', desc: 'Колесо чисел: числа, цвета, дюжины.' },
   ];
 
@@ -37,7 +37,7 @@
           <div>
             <div class="tabs" role="tablist">
               <button role="tab" aria-selected="${tab === 'arcade'}" data-href="#/games"><span class="ms">sports_esports</span>Аркада</button>
-              <button role="tab" aria-selected="${tab === 'luck'}" data-href="#/luck"><span class="ms">stars</span>Удача</button>
+              <button role="tab" aria-selected="${tab === 'luck'}" data-href="#/luck"><span class="ms">payments</span>Удача</button>
             </div>
             <div id="hubBody"></div>
           </div>`));
