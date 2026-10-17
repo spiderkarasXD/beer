@@ -364,7 +364,7 @@
         calcErr = e.message === 'div0' ? 'На ноль рис не делится 🍚' : 'Слишком много риса 🌾';
       }
       done = true;
-      if (!calcErr) epic(result);
+      if (!calcErr) epic(splitExpr(t), result);
     }
     render();
   }
@@ -407,11 +407,19 @@
     }
   }
 
-  /* ---------- эпичное «=»: вспышка, ударная волна, взрыв риса, тряска и БУМ ---------- */
+  /* ---------- эпичное «=»: катсцена вычисления ----------
+     Числа взлетают к порталу со знаком, дрожат, кружатся по орбите среди вопросиков,
+     камера наезжает, экран трясёт, цвета двоятся, к центру стягиваются лучи света.
+     Тишина, белая вспышка — и под дроп в портале появляется ответ, летят зелёные галочки,
+     фон мигает неоном. Клик или любая клавиша — пропустить. */
   const EPIC_CAPS = ['Легендарно', 'Рисовый удар', 'Математика свершилась', 'Абсолютный рис', 'Критический урон', 'Это было эпично', 'Готово, шеф'];
+  const NEON = ['#00ff6a', '#2979ff', '#b000ff', '#ff1744'];
+  // секунды: подготовка → дрожь → орбита → кульминация → слияние → дроп → конец
+  const T = { tension: 0.7, orbit: 1.7, climax: 2.9, merge: 3.9, drop: 4.1, end: 6.5, out: 6.9 };
+  const BEAT = 0.4;
   let soundOn = store.get('rice:sound', true);
-  let actx = null;
-  let epicEl = null, epicTimer = null;
+  let actx = null, noiseBuf = null;
+  let scene = null;
 
   function syncSound() {
     const b = $('#calcSound');
@@ -421,124 +429,460 @@
   $('#calcSound').onclick = () => { soundOn = !soundOn; store.set('rice:sound', soundOn); syncSound(); };
   syncSound();
 
-  // Звук синтезируется на лету: бас-удар, взрыв из шума и киношный «бряяям»
-  function boom(power) {
-    if (!soundOn) return;
+  const clamp01 = (x) => Math.max(0, Math.min(1, x));
+  const phase = (t, a, b) => clamp01((t - a) / (b - a));
+  const easeOut = (x) => 1 - Math.pow(1 - x, 3);
+  const easeIn = (x) => x * x * x;
+  const easeOutBack = (x) => 1 + 2.7 * Math.pow(x - 1, 3) + 1.7 * Math.pow(x - 1, 2);
+
+  /* ---- саундтрек: всё синтезируется через Web Audio, без файлов ---- */
+  function soundtrack(full) {
     try {
       actx = actx || new (window.AudioContext || window.webkitAudioContext)();
       if (actx.state === 'suspended') actx.resume();
-      const t = actx.currentTime, tail = 1.2 + power * 0.08;
-      const comp = actx.createDynamicsCompressor();
-      const master = actx.createGain();
-      master.gain.value = 0.8;
-      master.connect(comp).connect(actx.destination);
-      const env = (g, peak, attack, end) => {
-        g.gain.setValueAtTime(0.0001, t);
-        g.gain.exponentialRampToValueAtTime(peak, t + attack);
-        g.gain.exponentialRampToValueAtTime(0.0001, t + end);
-      };
+    } catch (e) { return null; }
+    const ctx = actx;
+    if (!noiseBuf) {
+      noiseBuf = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate);
+      const d = noiseBuf.getChannelData(0);
+      for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    }
+    const t0 = ctx.currentTime + 0.05;
+    const D = full ? T.drop : 0;
+    const at = (s) => t0 + s;
+    const out = ctx.createGain();
+    out.gain.value = 0.85;
+    out.connect(ctx.createDynamicsCompressor()).connect(ctx.destination);
 
-      const kick = actx.createOscillator(), kickG = actx.createGain();
-      kick.frequency.setValueAtTime(160, t);
-      kick.frequency.exponentialRampToValueAtTime(36, t + 0.6);
-      env(kickG, 1, 0.008, tail);
-      kick.connect(kickG).connect(master);
-      kick.start(t);
-      kick.stop(t + tail + 0.1);
+    const env = (param, start, peak, attack, end) => {
+      param.setValueAtTime(0.0001, start);
+      param.exponentialRampToValueAtTime(peak, start + attack);
+      param.exponentialRampToValueAtTime(0.0001, end);
+    };
+    const tone = (start, dur, type, f0, f1, peak, dest = out) => {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = type;
+      o.frequency.setValueAtTime(f0, start);
+      if (f1 !== f0) o.frequency.exponentialRampToValueAtTime(f1, start + dur * 0.8);
+      env(g.gain, start, peak, 0.005, start + dur);
+      o.connect(g).connect(dest);
+      o.start(start);
+      o.stop(start + dur + 0.05);
+    };
+    const noise = (start, dur, type, freq, peak, f1) => {
+      const src = ctx.createBufferSource(), f = ctx.createBiquadFilter(), g = ctx.createGain();
+      src.buffer = noiseBuf;
+      f.type = type;
+      f.frequency.setValueAtTime(freq, start);
+      if (f1) f.frequency.exponentialRampToValueAtTime(f1, start + dur);
+      env(g.gain, start, peak, 0.004, start + dur);
+      src.connect(f).connect(g).connect(out);
+      src.start(start, Math.random());
+      src.stop(start + dur + 0.05);
+    };
+    const kick = (s, peak = 1) => tone(s, 0.45, 'sine', 160, 38, peak);
+    const snare = (s, peak) => { noise(s, 0.12, 'highpass', 1400, peak); tone(s, 0.08, 'triangle', 240, 180, peak * 0.5); };
 
-      const len = Math.floor(actx.sampleRate * 1.6);
-      const buf = actx.createBuffer(1, len, actx.sampleRate), d = buf.getChannelData(0);
-      for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3);
-      const noise = actx.createBufferSource(), lp = actx.createBiquadFilter(), noiseG = actx.createGain();
-      noise.buffer = buf;
-      lp.type = 'lowpass';
-      lp.frequency.setValueAtTime(5000, t);
-      lp.frequency.exponentialRampToValueAtTime(150, t + 1.3);
-      env(noiseG, 0.7, 0.005, 1.6);
-      noise.connect(lp).connect(noiseG).connect(master);
-      noise.start(t);
-
-      const braamF = actx.createBiquadFilter(), braamG = actx.createGain();
-      braamF.type = 'lowpass';
-      braamF.frequency.setValueAtTime(250, t);
-      braamF.frequency.linearRampToValueAtTime(1400, t + 0.35);
-      braamF.frequency.exponentialRampToValueAtTime(200, t + 2);
-      env(braamG, 0.22, 0.12, 2.2);
-      braamF.connect(braamG).connect(master);
-      [55, 82.4, 110, 110.6].forEach((f) => {
-        const o = actx.createOscillator();
+    if (full) {
+      // гудящий дрон, фильтр которого раскрывается к кульминации, и обрыв перед слиянием
+      const droneF = ctx.createBiquadFilter(), droneG = ctx.createGain();
+      droneF.type = 'lowpass';
+      droneF.frequency.setValueAtTime(160, at(0));
+      droneF.frequency.exponentialRampToValueAtTime(3200, at(T.merge));
+      droneG.gain.setValueAtTime(0.0001, at(0));
+      droneG.gain.exponentialRampToValueAtTime(0.1, at(T.tension));
+      droneG.gain.exponentialRampToValueAtTime(0.32, at(T.merge - 0.02));
+      droneG.gain.linearRampToValueAtTime(0, at(T.merge));
+      droneF.connect(droneG).connect(out);
+      [55, 55.4, 82.4, 110.3].forEach((f) => {
+        const o = ctx.createOscillator();
         o.type = 'sawtooth';
-        o.frequency.value = f;
-        o.connect(braamF);
-        o.start(t);
-        o.stop(t + 2.3);
+        o.frequency.setValueAtTime(f, at(0));
+        o.frequency.exponentialRampToValueAtTime(f * 2, at(T.merge));
+        o.connect(droneF);
+        o.start(at(0));
+        o.stop(at(T.merge + 0.05));
       });
-    } catch (e) { /* без звука — так без звука */ }
-  }
-
-  function epic(value) {
-    // сила эффекта растёт с размером числа: 1 → 0, миллиард → 9
-    const power = Math.min(15, Math.log10(Math.abs(value) + 1));
-    boom(power);
-    if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-
-    if (epicEl) epicEl.remove();
-    clearTimeout(epicTimer);
-    const screen = $('#calcScreen');
-    const r = screen.getBoundingClientRect();
-    const ox = r.left + r.width / 2, oy = r.top + r.height / 2;
-    const text = fmtCalc(value);
-
-    epicEl = document.createElement('div');
-    epicEl.className = 'epic';
-    epicEl.setAttribute('aria-hidden', 'true');
-    epicEl.innerHTML = `
-      <div class="epic-dim"></div>
-      <div class="epic-flash"></div>
-      <div class="epic-ring" style="left:${ox}px;top:${oy}px"></div>
-      <div class="epic-ring two" style="left:${ox}px;top:${oy}px"></div>
-      <div class="epic-num"></div>
-      <div class="epic-cap"></div>`;
-    const num = $('.epic-num', epicEl);
-    const size = Math.max(40, Math.min(170, (window.innerWidth * 0.9) / (text.length * 0.62)));
-    num.textContent = text;
-    num.style.fontSize = size + 'px';
-    const cap = $('.epic-cap', epicEl);
-    cap.textContent = EPIC_CAPS[Math.floor(Math.random() * EPIC_CAPS.length)];
-    cap.style.setProperty('--cap-gap', size * 0.55 + 12 + 'px');
-    document.body.appendChild(epicEl);
-
-    const count = Math.round(40 + power * 8);
-    const reach = Math.max(window.innerWidth, window.innerHeight) * 0.6;
-    for (let i = 0; i < count; i++) {
-      const g = document.createElement('span');
-      g.className = 'epic-grain';
-      g.style.left = ox + 'px';
-      g.style.top = oy + 'px';
-      epicEl.appendChild(g);
-      const a = Math.random() * Math.PI * 2, dist = reach * (0.35 + Math.random() * 0.65);
-      const dx = Math.cos(a) * dist, dy = Math.sin(a) * dist, rot = Math.random() * 1440 - 720;
-      g.animate([
-        { transform: 'translate(0, 0) rotate(0deg) scale(.4)', opacity: 1 },
-        { transform: `translate(${dx}px, ${dy}px) rotate(${rot}deg) scale(1.2)`, opacity: 1, offset: 0.55 },
-        { transform: `translate(${dx * 1.15}px, ${dy + 260}px) rotate(${rot * 1.4}deg) scale(1)`, opacity: 0 },
-      ], { duration: 1200 + Math.random() * 700, easing: 'cubic-bezier(.12, .8, .3, 1)', fill: 'forwards' });
+      // райзер из шума на орбите и в кульминации
+      const rs = ctx.createBufferSource(), rf = ctx.createBiquadFilter(), rg = ctx.createGain();
+      rs.buffer = noiseBuf;
+      rs.loop = true;
+      rf.type = 'bandpass';
+      rf.Q.value = 1.2;
+      rf.frequency.setValueAtTime(400, at(T.orbit));
+      rf.frequency.exponentialRampToValueAtTime(9000, at(T.merge));
+      rg.gain.setValueAtTime(0.0001, at(T.orbit));
+      rg.gain.exponentialRampToValueAtTime(0.45, at(T.merge - 0.02));
+      rg.gain.linearRampToValueAtTime(0, at(T.merge));
+      rs.connect(rf).connect(rg).connect(out);
+      rs.start(at(T.orbit));
+      rs.stop(at(T.merge + 0.05));
+      // ускоряющиеся ударные
+      for (let s = T.tension, gap = 0.34, i = 0; s < T.merge - 0.03; s += gap, gap = Math.max(0.045, gap * 0.9), i++) {
+        snare(at(s), 0.12 + 0.4 * phase(s, T.tension, T.merge));
+        if (s < T.climax && i % 2 === 0) kick(at(s), 0.55);
+      }
     }
 
-    const wrap = $('.view-wrap');
-    [wrap, screen].forEach((el) => el.classList.remove('epic-shake', 'epic-hit'));
-    void wrap.offsetWidth;
-    wrap.classList.add('epic-shake');
-    screen.classList.add('epic-hit');
-    if (navigator.vibrate) navigator.vibrate([60, 40, 120]);
-    riceRain();
+    // дроп: удар, бас, аккорды на слабую долю, хлопки и хэты (Am – Am – F – F – C – G)
+    kick(at(D), 1.3);
+    noise(at(D), 1.4, 'lowpass', 7000, 0.8, 180);
+    const roots = [55, 55, 43.65, 43.65, 65.41, 49];
+    const chords = [[220, 261.63, 329.63], [220, 261.63, 329.63], [174.61, 220, 261.63], [174.61, 220, 261.63], [261.63, 329.63, 392], [196, 246.94, 293.66]];
+    const stabF = ctx.createBiquadFilter();
+    stabF.type = 'lowpass';
+    stabF.frequency.value = 3800;
+    stabF.connect(out);
+    roots.forEach((root, b) => {
+      const tb = at(D + b * BEAT);
+      if (b) kick(tb, 1);
+      tone(tb, BEAT * 0.95, 'sawtooth', root, root, 0.3);
+      tone(tb, BEAT * 0.95, 'sine', root, root, 0.5);
+      if (b % 2) noise(tb, 0.18, 'bandpass', 1800, 0.55);
+      noise(tb + BEAT / 2, 0.05, 'highpass', 8000, 0.18);
+      chords[b].forEach((f) => [0.996, 1.004].forEach((k) => tone(tb + BEAT / 2, 0.2, 'sawtooth', f * k, f * k, 0.07, stabF)));
+    });
+    kick(at(D + roots.length * BEAT), 1.2);
+    noise(at(D + roots.length * BEAT), 1.1, 'lowpass', 6000, 0.55, 150);
 
-    epicTimer = setTimeout(() => {
-      if (epicEl) epicEl.remove();
-      epicEl = null;
-      wrap.classList.remove('epic-shake');
-      screen.classList.remove('epic-hit');
-    }, 2100);
+    return {
+      stop() {
+        const now = ctx.currentTime;
+        out.gain.cancelScheduledValues(now);
+        out.gain.setValueAtTime(out.gain.value, now);
+        out.gain.linearRampToValueAtTime(0, now + 0.08);
+        setTimeout(() => out.disconnect(), 200);
+      },
+    };
+  }
+
+  // делим выражение по последнему оператору: «1 + 2 × 3» → «1 + 2», «×», «3»
+  function splitExpr(t) {
+    let i = t.length - 1;
+    while (i >= 0 && !isOp(t[i])) i--;
+    if (i <= 0) return { left: fmtExpr(t), sign: '=', right: '' };
+    return { left: fmtExpr(t.slice(0, i)), sign: t[i], right: fmtExpr(t.slice(i + 1)) };
+  }
+
+  function stopEpic() {
+    if (!scene) return;
+    const s = scene;
+    scene = null;
+    cancelAnimationFrame(s.raf);
+    window.removeEventListener('resize', s.resize);
+    if (s.music) s.music.stop();
+    s.el.remove();
+    riceRain();
+  }
+
+  function epic(expr, value) {
+    stopEpic();
+    const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const music = soundOn ? soundtrack(!reduce) : null;
+    if (reduce) { riceRain(); return; }
+
+    const el = document.createElement('div');
+    el.className = 'epic';
+    el.setAttribute('aria-hidden', 'true');
+    el.innerHTML = '<canvas></canvas><div class="epic-skip">нажми, чтобы пропустить</div>';
+    document.body.appendChild(el);
+    const cv = $('canvas', el), g = cv.getContext('2d');
+    const s = scene = { el, music, raf: 0, resize: null };
+    let W = 0, H = 0, dpr = 1;
+    s.resize = () => {
+      dpr = Math.min(2, window.devicePixelRatio || 1);
+      W = window.innerWidth;
+      H = window.innerHeight;
+      cv.width = Math.round(W * dpr);
+      cv.height = Math.round(H * dpr);
+    };
+    s.resize();
+    window.addEventListener('resize', s.resize);
+    el.addEventListener('pointerdown', (e) => { e.preventDefault(); stopEpic(); });
+
+    const FONT = '"Roboto", system-ui, sans-serif';
+    const answer = fmtCalc(value);
+    const caption = EPIC_CAPS[Math.floor(Math.random() * EPIC_CAPS.length)];
+    const src = $('#calcMain').getBoundingClientRect();
+    const srcX = src.left + src.width / 2, srcY = src.top + src.height / 2;
+    const parts = [];   // «?», галочки и рис
+    const rays = [];    // лучи света, летящие к центру
+    let last = performance.now(), start = last, vibrated = false;
+
+    const spawn = (kind, n, speed) => {
+      for (let i = 0; i < n; i++) {
+        const a = Math.random() * Math.PI * 2, v = speed * (0.4 + Math.random() * 0.8);
+        parts.push({ kind, x: Math.cos(a) * 20, y: Math.sin(a) * 20, vx: Math.cos(a) * v, vy: Math.sin(a) * v,
+          rot: Math.random() * 6, vr: Math.random() * 8 - 4, size: 12 + Math.random() * 22, age: 0, life: 0.9 + Math.random() * 0.8 });
+      }
+    };
+    // текст с хроматической аберрацией: красный и голубой сдвинуты, белый поверх
+    const text = (str, x, y, size, color, ab, weight = 900) => {
+      g.font = `${weight} ${size}px ${FONT}`;
+      ab = Math.min(ab, size * 0.07);
+      if (ab > 0.4) {
+        g.globalCompositeOperation = 'lighter';
+        g.fillStyle = 'rgba(255, 0, 70, .85)';
+        g.fillText(str, x - ab, y);
+        g.fillStyle = 'rgba(0, 220, 255, .85)';
+        g.fillText(str, x + ab, y);
+        g.globalCompositeOperation = 'source-over';
+      }
+      g.fillStyle = color;
+      g.fillText(str, x, y);
+    };
+    const check = (p, a) => {
+      const k = p.size;
+      g.save();
+      g.translate(p.x, p.y);
+      g.rotate(Math.sin(p.rot) * 0.35);
+      g.lineCap = g.lineJoin = 'round';
+      g.beginPath();
+      g.moveTo(-0.45 * k, 0);
+      g.lineTo(-0.12 * k, 0.32 * k);
+      g.lineTo(0.5 * k, -0.38 * k);
+      g.strokeStyle = `rgba(0, 230, 118, ${a * 0.3})`;
+      g.lineWidth = k * 0.45;
+      g.stroke();
+      g.strokeStyle = `rgba(0, 230, 118, ${a})`;
+      g.lineWidth = k * 0.2;
+      g.stroke();
+      g.restore();
+    };
+
+    const frame = (now) => {
+      const t = (now - start) / 1000, dt = Math.min(0.05, (now - last) / 1000);
+      last = now;
+      if (t >= T.out) { stopEpic(); return; }
+      const R = Math.max(46, Math.min(110, Math.min(W, H) * 0.12));
+      const cx = W / 2, cy = H * 0.46;
+      const dropT = t - T.drop, beatF = dropT >= 0 ? (dropT / (BEAT / 2)) % 1 : 0;
+      const pulse = dropT >= 0 ? Math.pow(1 - beatF, 2) : 0;
+
+      cv.style.opacity = Math.min(phase(t, 0, 0.25), 1 - phase(t, T.end, T.out));
+      g.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      // фон: тьма, а на дропе — неон в такт
+      g.fillStyle = '#07060a';
+      g.fillRect(0, 0, W, H);
+      if (dropT >= 0) {
+        g.globalAlpha = 0.25 + 0.6 * pulse;
+        g.fillStyle = NEON[Math.floor(dropT / (BEAT / 2)) % NEON.length];
+        g.fillRect(0, 0, W, H);
+        g.globalAlpha = 1;
+      }
+      const vig = g.createRadialGradient(cx, cy, R, cx, cy, Math.max(W, H) * 0.75);
+      vig.addColorStop(0, 'rgba(0, 0, 0, 0)');
+      vig.addColorStop(1, 'rgba(0, 0, 0, .7)');
+      g.fillStyle = vig;
+      g.fillRect(0, 0, W, H);
+
+      // камера: наезд и тряска
+      const climax = phase(t, T.climax, T.merge);
+      let zoom = 1 + 0.4 * easeIn(climax), shake = 0, ab = 0;
+      if (t < T.climax) shake = t > T.tension ? 1.5 + 2 * phase(t, T.tension, T.climax) : 0;
+      else if (t < T.merge) { shake = 4 + 18 * climax; ab = 2 + 9 * climax; }
+      else if (dropT < 0) zoom = 1.4 + 0.3 * phase(t, T.merge, T.drop);
+      else { zoom = 1 + 0.25 * Math.exp(-dropT * 6) + 0.05 * pulse; shake = 16 * pulse; ab = 8 * pulse; }
+      g.translate(cx + (Math.random() * 2 - 1) * shake, cy + (Math.random() * 2 - 1) * shake);
+      g.scale(zoom, zoom);
+      g.textAlign = 'center';
+      g.textBaseline = 'middle';
+
+      // лучи света стягиваются к центру
+      if (t > T.climax && t < T.merge) {
+        const far = Math.hypot(W, H) / zoom;
+        for (let i = 0, n = Math.round((60 + 160 * climax) * dt); i < n; i++) {
+          rays.push({ a: Math.random() * Math.PI * 2, d: far * (0.6 + Math.random() * 0.4), len: 60 + Math.random() * 160, v: 1400 + Math.random() * 1400 });
+        }
+      }
+      g.lineCap = 'round';
+      for (let i = rays.length - 1; i >= 0; i--) {
+        const r = rays[i];
+        r.d -= r.v * dt;
+        if (r.d < R * 0.9 || t >= T.merge) { rays.splice(i, 1); continue; }
+        const c = Math.cos(r.a), sn = Math.sin(r.a);
+        g.strokeStyle = `rgba(255, 255, 255, ${Math.min(0.85, r.d / 400)})`;
+        g.lineWidth = 2.5;
+        g.beginPath();
+        g.moveTo(c * r.d, sn * r.d);
+        g.lineTo(c * (r.d + r.len), sn * (r.d + r.len));
+        g.stroke();
+      }
+
+      // частицы: «?» до дропа, галочки и рис после
+      const density = Math.max(0.45, Math.min(1, (W * H) / (1280 * 800)));
+      if (t > T.orbit && t < T.merge) spawn('q', Math.round((25 + 90 * phase(t, T.orbit, T.merge)) * density * dt + Math.random() * 0.5), 260 + 260 * climax);
+      if (dropT >= 0 && !s.burst) {
+        // вопросы кончились — теперь только галочки (и немного риса)
+        s.burst = true;
+        parts.length = 0;
+        spawn('ok', Math.round(46 * density), 620);
+        spawn('rice', Math.round(30 * density), 520);
+      }
+      if (dropT >= 0 && t < T.end) spawn('ok', Math.round(30 * dt + Math.random() * 0.6), 480);
+      for (let i = parts.length - 1; i >= 0; i--) {
+        const p = parts[i];
+        p.age += dt;
+        if (p.age > p.life) { parts.splice(i, 1); continue; }
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+        p.rot += p.vr * dt;
+        const a = 1 - p.age / p.life;
+        if (p.kind === 'ok') check(p, a);
+        else if (p.kind === 'rice') {
+          p.vy += 500 * dt;
+          g.save();
+          g.translate(p.x, p.y);
+          g.rotate(p.rot);
+          g.fillStyle = `rgba(251, 247, 236, ${a})`;
+          g.beginPath();
+          g.ellipse(0, 0, 3.5, 8, 0, 0, Math.PI * 2);
+          g.fill();
+          g.restore();
+        } else {
+          g.save();
+          g.globalAlpha = a;
+          g.translate(p.x, p.y);
+          g.rotate(p.rot * 0.4);
+          text('?', 0, 0, p.size, '#fff', ab * 0.6, 800);
+          g.restore();
+        }
+      }
+
+      // числа: взлетают с экрана калькулятора, дрожат по бокам, уходят на орбиту и сливаются с порталом
+      const opSize = (() => {
+        let size = R * 0.95;
+        g.font = `900 ${size}px ${FONT}`;
+        const widest = Math.max(g.measureText(expr.left).width, expr.right ? g.measureText(expr.right).width : 0);
+        const room = W / 2 / 1.4 - R * 1.35 - 12;
+        if (widest > room) size = Math.max(14, size * room / widest);
+        return size;
+      })();
+      g.font = `900 ${opSize}px ${FONT}`;
+      const sideL = R * 1.35 + g.measureText(expr.left).width / 2;
+      const sideR = expr.right ? R * 1.35 + g.measureText(expr.right).width / 2 : 0;
+      const ops = [];
+      if (dropT < 0) {
+        const nums = expr.right ? [[expr.left, -sideL, Math.PI], [expr.right, sideR, 0]] : [[expr.left, -sideL, Math.PI]];
+        nums.forEach(([str, side, a0], k) => {
+          let x, y, sc = 1, alpha = 1;
+          if (t < T.tension) {
+            const p = easeOutBack(phase(t, 0, T.tension));
+            x = (srcX - cx + (k ? 30 : -30)) * (1 - p) + side * p;
+            y = (srcY - cy) * (1 - p) - Math.sin(Math.PI * phase(t, 0, T.tension)) * 60;
+          } else if (t < T.orbit) {
+            const w = phase(t, T.tension, T.orbit);
+            x = side + Math.sin(t * 23 + k) * 3 * w + (Math.random() - 0.5) * 2.5 * w;
+            y = Math.sin(t * 11 + k * 2) * 7 * w + (Math.random() - 0.5) * 2.5 * w;
+          } else {
+            // угол — интеграл ускоряющейся угловой скорости ω = 2 + 26·u²
+            const span = T.drop - T.orbit, d = t - T.orbit;
+            const ang = a0 + 2 * d + 26 * d * d * d / (3 * span * span);
+            const settle = easeOut(phase(t, T.orbit, T.orbit + 0.35));
+            const merge = easeIn(phase(t, T.merge, T.drop));
+            const r = (Math.abs(side) * (1 - settle) + R * 1.75 * settle) * (1 - merge);
+            x = Math.cos(ang) * r;
+            y = Math.sin(ang) * r * 0.5;
+            sc = (1 + 0.22 * Math.sin(ang)) * (1 - 0.8 * merge);
+            alpha = 1 - merge * 0.7;
+          }
+          ops.push({ str, x, y, sc, alpha, front: y >= 0 });
+        });
+      }
+      const drawOp = (o) => {
+        g.save();
+        g.globalAlpha = o.alpha;
+        g.translate(o.x, o.y);
+        g.scale(o.sc, o.sc);
+        g.shadowColor = '#ffd54a';
+        g.shadowBlur = 18;
+        text(o.str, 0, 0, opSize, '#fff', ab);
+        g.restore();
+      };
+      ops.filter((o) => !o.front).forEach(drawOp);
+
+      // портал
+      const merging = phase(t, T.merge, T.drop);
+      let pr = R * (1 + (t > T.climax && dropT < 0 ? 0.05 * Math.sin(t * 50) : 0) - 0.25 * merging);
+      if (dropT >= 0) {
+        g.font = `900 ${R}px ${FONT}`;
+        const fit = Math.min(1, (R * 1.6) / g.measureText(answer).width);
+        const aSize = Math.max(18, R * fit);
+        g.font = `900 ${aSize}px ${FONT}`;
+        pr = Math.max(R, g.measureText(answer).width / 2 + 22) * (1 + 0.35 * Math.exp(-dropT * 7) * Math.cos(dropT * 18) + 0.04 * pulse);
+        s.aSize = aSize;
+      }
+      const ringColor = dropT >= 0 ? '#00e676' : '#ffd54a';
+      g.save();
+      g.shadowColor = ringColor;
+      g.shadowBlur = 30 + 50 * merging + 30 * pulse;
+      g.fillStyle = '#120f08';
+      g.beginPath();
+      g.arc(0, 0, pr, 0, Math.PI * 2);
+      g.fill();
+      g.lineWidth = 6;
+      g.strokeStyle = ringColor;
+      g.stroke();
+      g.restore();
+      g.save();
+      g.setLineDash([10, 12]);
+      g.lineDashOffset = -t * (60 + 400 * climax);
+      g.lineWidth = 2;
+      g.strokeStyle = dropT >= 0 ? 'rgba(0, 230, 118, .6)' : 'rgba(255, 213, 74, .5)';
+      g.beginPath();
+      g.arc(0, 0, pr * 1.28, 0, Math.PI * 2);
+      g.stroke();
+      g.restore();
+      if (dropT < 0) text(expr.sign, 0, R * 0.04, R * 1.1, '#fff', ab);
+      else {
+        g.save();
+        g.shadowColor = '#00e676';
+        g.shadowBlur = 24;
+        text(answer, 0, s.aSize * 0.04, s.aSize, '#fff', ab);
+        g.restore();
+        const capA = phase(dropT, 0.15, 0.45);
+        if (capA > 0) {
+          g.save();
+          g.globalAlpha = capA;
+          g.shadowColor = 'rgba(0, 0, 0, .8)';
+          g.shadowBlur = 10;
+          const capSize = Math.max(13, Math.min(26, W * 0.045));
+          g.font = `800 ${capSize}px ${FONT}`;
+          if ('letterSpacing' in g) g.letterSpacing = capSize * 0.35 + 'px';
+          text(caption.toUpperCase(), 0, pr * 1.28 + capSize * 1.6, capSize, '#fff', ab * 0.5, 800);
+          if ('letterSpacing' in g) g.letterSpacing = '0px';
+          g.restore();
+        }
+      }
+
+      // «?» кружатся вокруг портала, пока числа дрожат
+      if (t > T.tension * 0.7 && t < T.merge) {
+        const qa = Math.min(phase(t, T.tension * 0.7, T.tension + 0.3), 1 - merging);
+        for (let i = 0; i < 10; i++) {
+          const a = (i / 10) * Math.PI * 2 + t * (1.4 + 3 * climax);
+          g.save();
+          g.globalAlpha = 0.75 * qa;
+          text('?', Math.cos(a) * R * 1.55, Math.sin(a) * R * 1.55, R * 0.24, '#fff', ab * 0.5, 800);
+          g.restore();
+        }
+      }
+      ops.filter((o) => o.front).forEach(drawOp);
+
+      // слияние: экран заливает белым, на дропе вспышка гаснет
+      g.setTransform(dpr, 0, 0, dpr, 0, 0);
+      const flash = dropT < 0 ? easeIn(merging) : Math.exp(-dropT * 5);
+      if (flash > 0.01) {
+        g.fillStyle = `rgba(255, 255, 255, ${flash})`;
+        g.fillRect(0, 0, W, H);
+      }
+      if (dropT >= 0 && !vibrated) {
+        vibrated = true;
+        if (navigator.vibrate) navigator.vibrate([90, 110, 90, 110, 160]);
+      }
+      s.raf = requestAnimationFrame(frame);
+    };
+    s.raf = requestAnimationFrame(frame);
   }
 
   $('#calcKeys').addEventListener('click', (e) => {
@@ -549,6 +893,7 @@
   const KEYS = { '/': '÷', '*': '×', x: '×', 'х': '×', '-': '−', '+': '+', ',': '.', '.': '.', '%': '%', Enter: '=', '=': '=', Backspace: 'back', Escape: 'C', Delete: 'C' };
   document.addEventListener('keydown', (e) => {
     if (e.ctrlKey || e.metaKey || e.altKey) return;
+    if (scene) { e.preventDefault(); stopEpic(); return; }
     if (e.target.closest('input, select, textarea')) return;
     const k = /^\d$/.test(e.key) ? e.key : KEYS[e.key];
     if (!k) return;

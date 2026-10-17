@@ -76,85 +76,18 @@
 }
 .calc-sound[aria-pressed="false"] { opacity: .55; }
 
-/* ---------- эпичное «=» ---------- */
-.epic { position: fixed; inset: 0; z-index: 70; pointer-events: none; overflow: hidden; }
-.epic-dim {
-  position: absolute; inset: 0;
-  background: radial-gradient(circle at 50% 42%, rgba(0, 0, 0, .4), rgba(0, 0, 0, .8));
-  animation: epicDim 1.8s ease-out forwards;
-}
-@keyframes epicDim { 0% { opacity: 0; } 10%, 70% { opacity: 1; } 100% { opacity: 0; } }
-.epic-flash { position: absolute; inset: 0; background: #fff; animation: epicFlash .5s ease-out forwards; }
-@keyframes epicFlash { from { opacity: .95; } to { opacity: 0; } }
-.epic-ring {
-  position: absolute;
-  border: 10px solid var(--md-primary);
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-  animation: epicRing .9s cubic-bezier(.15, .75, .3, 1) forwards;
-}
-.epic-ring.two { border-color: var(--md-tertiary); animation-delay: .12s; opacity: 0; }
-@keyframes epicRing {
-  from { width: 0; height: 0; opacity: 1; }
-  to { width: 230vmax; height: 230vmax; opacity: 0; border-width: 1px; }
-}
-.epic-num {
-  position: absolute; left: 50%; top: 42%;
-  max-width: 94vw;
-  color: #ffd54a;
-  font-weight: 900; line-height: 1; letter-spacing: -.03em;
-  white-space: nowrap;
-  font-variant-numeric: tabular-nums;
-  text-shadow: 0 0 28px rgba(255, 190, 40, .8), 0 6px 0 rgba(0, 0, 0, .45);
-  transform: translate(-50%, -50%);
-  animation: epicNum 1.8s cubic-bezier(.2, .9, .2, 1) forwards;
-}
-@keyframes epicNum {
-  0% { transform: translate(-50%, -50%) scale(4); opacity: 0; filter: blur(14px); }
-  14% { transform: translate(-50%, -50%) scale(.9); opacity: 1; filter: blur(0); }
-  22% { transform: translate(-50%, -50%) scale(1.05); }
-  30%, 72% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-  100% { transform: translate(-50%, -80%) scale(.55); opacity: 0; }
-}
-.epic-cap {
-  position: absolute; left: 50%; top: 42%;
-  margin-top: var(--cap-gap, 80px);
-  color: #fff;
-  font-size: clamp(13px, 2.6vw, 22px); font-weight: 800;
-  letter-spacing: .4em; text-transform: uppercase;
-  white-space: nowrap;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, .7);
+/* ---------- эпичное «=»: катсцена рисуется на canvas ---------- */
+.epic { position: fixed; inset: 0; z-index: 70; cursor: pointer; touch-action: none; }
+.epic canvas { position: absolute; inset: 0; display: block; width: 100%; height: 100%; opacity: 0; }
+.epic-skip {
+  position: absolute; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom));
+  color: rgba(255, 255, 255, .6);
+  font-size: 12px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase;
+  white-space: nowrap; pointer-events: none;
   transform: translateX(-50%);
-  animation: epicCap 1.8s ease-out forwards;
+  animation: epicSkip 6.9s linear forwards;
 }
-@keyframes epicCap {
-  0%, 14% { opacity: 0; letter-spacing: 1.2em; }
-  32%, 72% { opacity: 1; letter-spacing: .4em; }
-  100% { opacity: 0; }
-}
-.epic-grain {
-  position: absolute;
-  width: 7px; height: 16px; margin: -8px 0 0 -3.5px;
-  border-radius: 50%;
-  background: #fbf7ec;
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, .18), 0 0 8px rgba(255, 255, 255, .6);
-}
-.epic-shake { animation: epicShake .55s cubic-bezier(.36, .07, .19, .97); }
-@keyframes epicShake {
-  10% { transform: translate(-9px, 5px) rotate(-.6deg); }
-  20% { transform: translate(8px, -7px) rotate(.6deg); }
-  30% { transform: translate(-7px, -4px); }
-  40% { transform: translate(6px, 6px) rotate(.3deg); }
-  55% { transform: translate(-4px, 2px); }
-  70% { transform: translate(3px, -2px); }
-  85% { transform: translate(-1px, 1px); }
-}
-.calc-screen.epic-hit { animation: epicHit .6s var(--ease-spring); }
-@keyframes epicHit {
-  0% { transform: scale(1); box-shadow: 0 0 0 0 var(--md-primary); }
-  25% { transform: scale(1.06); box-shadow: 0 0 0 6px var(--md-primary), 0 0 40px var(--md-primary); }
-  100% { transform: scale(1); box-shadow: 0 0 0 0 transparent; }
-}
+@keyframes epicSkip { 0% { opacity: 0; } 8%, 85% { opacity: 1; } 100% { opacity: 0; } }
 
 /* ---------- переводчик ---------- */
 .conv { scroll-margin-top: 80px; }
