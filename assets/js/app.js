@@ -46,6 +46,7 @@
     { href: 'music/', name: 'VIBEFILTER', desc: 'Убей свои плохие треки', icon: 'music_note', cls: 'c4' },
     { href: 'old/', name: 'Beer Translate (old)', desc: 'Самая первая версия переводчика', icon: 'history', cls: 'c1' },
     { href: 'rat/', name: 'Раздел с крысой', desc: 'Просто крыса', icon: 'pest_control_rodent', cls: 'c3' },
+    { href: 'rice/', name: 'Rice', desc: 'Калькулятор риса и переводчик из риса во всё', icon: 'rice_bowl', cls: 'c2' },
   ];
 
   Beer.route('sections', {
