@@ -364,7 +364,7 @@
         calcErr = e.message === 'div0' ? 'На ноль рис не делится 🍚' : 'Слишком много риса 🌾';
       }
       done = true;
-      if (!calcErr) riceRain();
+      if (!calcErr) epic(result);
     }
     render();
   }
@@ -405,6 +405,140 @@
       screen.appendChild(g);
       setTimeout(() => g.remove(), 1700);
     }
+  }
+
+  /* ---------- эпичное «=»: вспышка, ударная волна, взрыв риса, тряска и БУМ ---------- */
+  const EPIC_CAPS = ['Легендарно', 'Рисовый удар', 'Математика свершилась', 'Абсолютный рис', 'Критический урон', 'Это было эпично', 'Готово, шеф'];
+  let soundOn = store.get('rice:sound', true);
+  let actx = null;
+  let epicEl = null, epicTimer = null;
+
+  function syncSound() {
+    const b = $('#calcSound');
+    b.textContent = soundOn ? '🔊' : '🔇';
+    b.setAttribute('aria-pressed', String(soundOn));
+  }
+  $('#calcSound').onclick = () => { soundOn = !soundOn; store.set('rice:sound', soundOn); syncSound(); };
+  syncSound();
+
+  // Звук синтезируется на лету: бас-удар, взрыв из шума и киношный «бряяям»
+  function boom(power) {
+    if (!soundOn) return;
+    try {
+      actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+      if (actx.state === 'suspended') actx.resume();
+      const t = actx.currentTime, tail = 1.2 + power * 0.08;
+      const comp = actx.createDynamicsCompressor();
+      const master = actx.createGain();
+      master.gain.value = 0.8;
+      master.connect(comp).connect(actx.destination);
+      const env = (g, peak, attack, end) => {
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.exponentialRampToValueAtTime(peak, t + attack);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + end);
+      };
+
+      const kick = actx.createOscillator(), kickG = actx.createGain();
+      kick.frequency.setValueAtTime(160, t);
+      kick.frequency.exponentialRampToValueAtTime(36, t + 0.6);
+      env(kickG, 1, 0.008, tail);
+      kick.connect(kickG).connect(master);
+      kick.start(t);
+      kick.stop(t + tail + 0.1);
+
+      const len = Math.floor(actx.sampleRate * 1.6);
+      const buf = actx.createBuffer(1, len, actx.sampleRate), d = buf.getChannelData(0);
+      for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3);
+      const noise = actx.createBufferSource(), lp = actx.createBiquadFilter(), noiseG = actx.createGain();
+      noise.buffer = buf;
+      lp.type = 'lowpass';
+      lp.frequency.setValueAtTime(5000, t);
+      lp.frequency.exponentialRampToValueAtTime(150, t + 1.3);
+      env(noiseG, 0.7, 0.005, 1.6);
+      noise.connect(lp).connect(noiseG).connect(master);
+      noise.start(t);
+
+      const braamF = actx.createBiquadFilter(), braamG = actx.createGain();
+      braamF.type = 'lowpass';
+      braamF.frequency.setValueAtTime(250, t);
+      braamF.frequency.linearRampToValueAtTime(1400, t + 0.35);
+      braamF.frequency.exponentialRampToValueAtTime(200, t + 2);
+      env(braamG, 0.22, 0.12, 2.2);
+      braamF.connect(braamG).connect(master);
+      [55, 82.4, 110, 110.6].forEach((f) => {
+        const o = actx.createOscillator();
+        o.type = 'sawtooth';
+        o.frequency.value = f;
+        o.connect(braamF);
+        o.start(t);
+        o.stop(t + 2.3);
+      });
+    } catch (e) { /* без звука — так без звука */ }
+  }
+
+  function epic(value) {
+    // сила эффекта растёт с размером числа: 1 → 0, миллиард → 9
+    const power = Math.min(15, Math.log10(Math.abs(value) + 1));
+    boom(power);
+    if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    if (epicEl) epicEl.remove();
+    clearTimeout(epicTimer);
+    const screen = $('#calcScreen');
+    const r = screen.getBoundingClientRect();
+    const ox = r.left + r.width / 2, oy = r.top + r.height / 2;
+    const text = fmtCalc(value);
+
+    epicEl = document.createElement('div');
+    epicEl.className = 'epic';
+    epicEl.setAttribute('aria-hidden', 'true');
+    epicEl.innerHTML = `
+      <div class="epic-dim"></div>
+      <div class="epic-flash"></div>
+      <div class="epic-ring" style="left:${ox}px;top:${oy}px"></div>
+      <div class="epic-ring two" style="left:${ox}px;top:${oy}px"></div>
+      <div class="epic-num"></div>
+      <div class="epic-cap"></div>`;
+    const num = $('.epic-num', epicEl);
+    const size = Math.max(40, Math.min(170, (window.innerWidth * 0.9) / (text.length * 0.62)));
+    num.textContent = text;
+    num.style.fontSize = size + 'px';
+    const cap = $('.epic-cap', epicEl);
+    cap.textContent = EPIC_CAPS[Math.floor(Math.random() * EPIC_CAPS.length)];
+    cap.style.setProperty('--cap-gap', size * 0.55 + 12 + 'px');
+    document.body.appendChild(epicEl);
+
+    const count = Math.round(40 + power * 8);
+    const reach = Math.max(window.innerWidth, window.innerHeight) * 0.6;
+    for (let i = 0; i < count; i++) {
+      const g = document.createElement('span');
+      g.className = 'epic-grain';
+      g.style.left = ox + 'px';
+      g.style.top = oy + 'px';
+      epicEl.appendChild(g);
+      const a = Math.random() * Math.PI * 2, dist = reach * (0.35 + Math.random() * 0.65);
+      const dx = Math.cos(a) * dist, dy = Math.sin(a) * dist, rot = Math.random() * 1440 - 720;
+      g.animate([
+        { transform: 'translate(0, 0) rotate(0deg) scale(.4)', opacity: 1 },
+        { transform: `translate(${dx}px, ${dy}px) rotate(${rot}deg) scale(1.2)`, opacity: 1, offset: 0.55 },
+        { transform: `translate(${dx * 1.15}px, ${dy + 260}px) rotate(${rot * 1.4}deg) scale(1)`, opacity: 0 },
+      ], { duration: 1200 + Math.random() * 700, easing: 'cubic-bezier(.12, .8, .3, 1)', fill: 'forwards' });
+    }
+
+    const wrap = $('.view-wrap');
+    [wrap, screen].forEach((el) => el.classList.remove('epic-shake', 'epic-hit'));
+    void wrap.offsetWidth;
+    wrap.classList.add('epic-shake');
+    screen.classList.add('epic-hit');
+    if (navigator.vibrate) navigator.vibrate([60, 40, 120]);
+    riceRain();
+
+    epicTimer = setTimeout(() => {
+      if (epicEl) epicEl.remove();
+      epicEl = null;
+      wrap.classList.remove('epic-shake');
+      screen.classList.remove('epic-hit');
+    }, 2100);
   }
 
   $('#calcKeys').addEventListener('click', (e) => {
