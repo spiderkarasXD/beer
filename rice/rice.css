@@ -65,6 +65,30 @@
 }
 @keyframes grainFall { to { transform: translateY(210px) rotate(var(--r, 180deg)); opacity: .3; } }
 
+.calc-sound {
+  position: absolute; top: 10px; left: 10px;
+  display: grid; place-items: center;
+  width: 36px; height: 36px; padding: 0;
+  border: 0; border-radius: var(--shape-full);
+  background: transparent;
+  font-size: 18px; line-height: 1;
+  cursor: pointer;
+}
+.calc-sound[aria-pressed="false"] { opacity: .55; }
+
+/* ---------- эпичное «=»: катсцена рисуется на canvas ---------- */
+.epic { position: fixed; inset: 0; z-index: 70; cursor: pointer; touch-action: none; }
+.epic canvas { position: absolute; inset: 0; display: block; width: 100%; height: 100%; opacity: 0; }
+.epic-skip {
+  position: absolute; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom));
+  color: rgba(255, 255, 255, .6);
+  font-size: 12px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase;
+  white-space: nowrap; pointer-events: none;
+  transform: translateX(-50%);
+  animation: epicSkip 6.9s linear forwards;
+}
+@keyframes epicSkip { 0% { opacity: 0; } 8%, 85% { opacity: 1; } 100% { opacity: 0; } }
+
 /* ---------- переводчик ---------- */
 .conv { scroll-margin-top: 80px; }
 .conv-box {
