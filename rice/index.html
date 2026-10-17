@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Rice — калькулятор риса · Beer Translate</title>
-  <meta name="description" content="Калькулятор риса и переводчик из риса в метры, литры, стады Roblox, юниты CS2, вольты, скорость и не только.">
+  <title data-en="Rice — rice calculator · Beer Translate">Rice — калькулятор риса · Beer Translate</title>
+  <meta name="description" content="Калькулятор риса и переводчик из риса в метры, литры, стады Roblox, юниты CS2, вольты, скорость и не только." data-en-content="Rice calculator and converter from rice into meters, liters, Roblox studs, CS2 units, volts, speed and more.">
+  <script src="../assets/js/lang.js?v=3"></script>
   <meta name="theme-color" content="#fff8f2" id="metaTheme">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍚</text></svg>">
   <script>
@@ -18,36 +19,37 @@
   <link rel="preload" href="../assets/fonts/material-symbols-rounded.woff2?v=2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="../assets/css/fonts.css?v=2">
   <link rel="stylesheet" href="../assets/css/m3.css">
-  <link rel="stylesheet" href="../assets/css/app.css">
-  <link rel="stylesheet" href="rice.css">
+  <link rel="stylesheet" href="../assets/css/app.css?v=3">
+  <link rel="stylesheet" href="rice.css?v=3">
 </head>
 <body>
   <header class="topbar" id="topbar">
-    <a class="icon-btn sl back" href="../#/sections" title="Назад"><span class="ms">arrow_back</span></a>
+    <a class="icon-btn sl back" href="../#/sections" title="Назад" data-en-title="Back"><span class="ms">arrow_back</span></a>
     <div class="title">Rice</div>
-    <button class="icon-btn sl" id="themeBtn" title="Тема"><span class="ms">dark_mode</span></button>
+    <button class="btn text sl rice-lang" id="langBtn" title="English" data-en-title="Русский"></button>
+    <button class="icon-btn sl" id="themeBtn" title="Тема" data-en-title="Theme"><span class="ms">dark_mode</span></button>
   </header>
 
   <div class="view-wrap">
     <main class="view">
       <section class="hero rice-hero">
         <span class="mug">🍚</span>
-        <h1><b>Рисовый</b> калькулятор</h1>
-        <p>Считай как на обычном калькуляторе и переводи рис во что угодно: метры, литры, стады Roblox, юниты CS2, вольты, скорость и даже густоту спермы.</p>
+        <h1 data-en-html="&lt;b&gt;Rice&lt;/b&gt; calculator"><b>Рисовый</b> калькулятор</h1>
+        <p data-en="Calculate like on a normal calculator and convert rice into anything: meters, liters, Roblox studs, CS2 units, volts, speed and even sperm density.">Считай как на обычном калькуляторе и переводи рис во что угодно: метры, литры, стады Roblox, юниты CS2, вольты, скорость и даже густоту спермы.</p>
       </section>
 
       <div class="rice-layout">
-        <section class="calc" aria-label="Калькулятор риса">
+        <section class="calc" aria-label="Калькулятор риса" data-en-aria="Rice calculator">
           <div class="calc-screen" id="calcScreen">
-            <button class="calc-sound sl" id="calcSound" title="Звук эпичного «=»" aria-label="Звук эпичного «=»"></button>
+            <button class="calc-sound sl" id="calcSound" title="Звук эпичного «=»" aria-label="Звук эпичного «=»" data-en-title="Sound of the epic “=”" data-en-aria="Sound of the epic “=”"></button>
             <div class="calc-prev" id="calcPrev"></div>
             <div class="calc-main" id="calcMain" aria-live="polite">0</div>
             <div class="calc-live" id="calcLive"></div>
             <div class="calc-rice" id="calcRice"></div>
           </div>
           <div class="calc-keys" id="calcKeys">
-            <button class="sl fn" data-k="C" title="Очистить (Esc)">AC</button>
-            <button class="sl fn" data-k="back" title="Стереть (Backspace)"><span class="ms">backspace</span></button>
+            <button class="sl fn" data-k="C" title="Очистить (Esc)" data-en-title="Clear (Esc)">AC</button>
+            <button class="sl fn" data-k="back" title="Стереть (Backspace)" data-en-title="Delete (Backspace)"><span class="ms">backspace</span></button>
             <button class="sl op" data-k="%">%</button>
             <button class="sl op" data-k="÷">÷</button>
             <button class="sl" data-k="7">7</button>
@@ -64,36 +66,36 @@
             <button class="sl op" data-k="+">+</button>
             <button class="sl" data-k="±">±</button>
             <button class="sl" data-k="0">0</button>
-            <button class="sl" data-k=".">,</button>
+            <button class="sl" data-k="." data-en=".">,</button>
             <button class="sl eq" data-k="=">=</button>
           </div>
-          <button class="btn tonal block sl calc-send" id="calcSend"><span class="ms">swap_vert</span>Перевести результат в рис</button>
+          <button class="btn tonal block sl calc-send" id="calcSend"><span class="ms">swap_vert</span><span data-en="Convert the result to rice">Перевести результат в рис</span></button>
         </section>
 
-        <section class="conv" id="conv" aria-label="Переводчик риса">
+        <section class="conv" id="conv" aria-label="Переводчик риса" data-en-aria="Rice converter">
           <div class="conv-box">
             <label class="conv-side rice">
-              <span class="conv-lbl">Рис</span>
-              <input id="rcIn" type="text" inputmode="decimal" autocomplete="off" spellcheck="false" aria-label="Количество риса">
-              <select id="rcUnit" aria-label="Единица риса"></select>
+              <span class="conv-lbl" data-en="Rice">Рис</span>
+              <input id="rcIn" type="text" inputmode="decimal" autocomplete="off" spellcheck="false" aria-label="Количество риса" data-en-aria="Amount of rice">
+              <select id="rcUnit" aria-label="Единица риса" data-en-aria="Rice unit"></select>
               <span class="conv-hint" id="rcInHint"></span>
             </label>
             <div class="conv-eq" aria-hidden="true">=</div>
             <label class="conv-side">
-              <span class="conv-lbl">Во что</span>
-              <input id="rcOut" type="text" inputmode="decimal" autocomplete="off" spellcheck="false" aria-label="Результат">
-              <select id="rcTarget" aria-label="Во что переводить"></select>
+              <span class="conv-lbl" data-en="Into">Во что</span>
+              <input id="rcOut" type="text" inputmode="decimal" autocomplete="off" spellcheck="false" aria-label="Результат" data-en-aria="Result">
+              <select id="rcTarget" aria-label="Во что переводить" data-en-aria="Convert into"></select>
               <span class="conv-hint" id="rcOutHint"></span>
             </label>
           </div>
 
-          <h2 class="title-l section-title">Все переводы</h2>
+          <h2 class="title-l section-title" data-en="All conversions">Все переводы</h2>
           <div class="chip-row rice-chips" id="rcChips"></div>
           <div id="rcGrid"></div>
 
           <section class="card flat rice-facts">
-            <div class="title-m">Как считаем</div>
-            <ul class="body-m muted">
+            <div class="title-m" data-en="How we count">Как считаем</div>
+            <ul class="body-m muted" data-en-html="&lt;li&gt;1 grain of long-grain rice ≈ 7 mm and 25 mg — 40 grains per gram.&lt;/li&gt;&lt;li&gt;Length, games and speed — all grains laid end to end in one line.&lt;/li&gt;&lt;li&gt;Volume — loose, density ≈ 0.8 kg/l: about 32,000 grains per liter.&lt;/li&gt;&lt;li&gt;1 Roblox stud = 28 cm, 1 CS2 unit ≈ 1 inch (2.54 cm).&lt;/li&gt;&lt;li&gt;Volts — every grain is a 1.5 V AA battery, all in series.&lt;/li&gt;&lt;li&gt;Speed — you run the whole rice line in 1 second.&lt;/li&gt;&lt;li&gt;Density — all grains are sperm cells in 3 ml, the WHO norm starts at 16 million/ml.&lt;/li&gt;&lt;li&gt;Rice at $2/kg. Everything is approximate and just for fun 🍚&lt;/li&gt;">
               <li>1 зерно длиннозёрного риса ≈ 7 мм и 25 мг — 40 зёрен в грамме.</li>
               <li>Длина, игры и скорость — если выложить все зёрна в одну линию.</li>
               <li>Объём — насыпью, плотность ≈ 0,8 кг/л: в литре ≈ 32 000 зёрен.</li>
@@ -112,6 +114,6 @@
 
   <div class="snackbar" id="snackbar" role="status" aria-live="polite"><span id="snackText"></span></div>
 
-  <script src="rice.js" defer></script>
+  <script src="rice.js?v=3" defer></script>
 </body>
 </html>

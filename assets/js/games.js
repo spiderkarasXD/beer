@@ -6,16 +6,16 @@
   const { $, $$, h, store, snack, fmt, esc } = Beer;
 
   const ARCADE = [
-    { id: 'mines', title: 'Сапёр', icon: 'flag', cls: 'c4', desc: 'Классика: открой все клетки и не подорвись.', stat: () => { const b = store.get('mines:best', {}); return b.easy ? 'Рекорд (лёгкий): ' + Beer.time(b.easy) : null; } },
-    { id: 'snake', title: 'Змейка', icon: 'timeline', cls: 'c2', desc: 'Собирай пиво, расти и не врезайся в себя.', stat: () => { const b = store.get('snake:best', 0); return b ? 'Рекорд: ' + b : null; } },
-    { id: 'flags', title: 'Флаги', icon: 'public', cls: 'c3', desc: 'Угадай страну по флагу. Серия решает.', stat: () => { const b = store.get('flags:best', 0); return b ? 'Лучшая серия: ' + b : null; } },
-    { id: 'clicker', title: 'Пивной кликер', icon: 'sports_bar', cls: 'c1', desc: 'Кликай, строй пивоварни, копи миллиарды. Прогресс сохраняется.', stat: () => { const s = store.get('clicker', null); return s && s.total ? 'Сварено: ' + fmt(s.total) + ' 🍺' : null; } },
+    { id: 'mines', title: lng('Сапёр', 'Minesweeper'), icon: 'flag', cls: 'c4', desc: lng('Классика: открой все клетки и не подорвись.', 'A classic: open every cell and don’t blow up.'), stat: () => { const b = store.get('mines:best', {}); return b.easy ? lng('Рекорд (лёгкий): ', 'Best (easy): ') + Beer.time(b.easy) : null; } },
+    { id: 'snake', title: lng('Змейка', 'Snake'), icon: 'timeline', cls: 'c2', desc: lng('Собирай пиво, расти и не врезайся в себя.', 'Collect beer, grow and don’t bite yourself.'), stat: () => { const b = store.get('snake:best', 0); return b ? lng('Рекорд: ', 'Best: ') + b : null; } },
+    { id: 'flags', title: lng('Флаги', 'Flags'), icon: 'public', cls: 'c3', desc: lng('Угадай страну по флагу. Серия решает.', 'Guess the country by its flag. The streak is what counts.'), stat: () => { const b = store.get('flags:best', 0); return b ? lng('Лучшая серия: ', 'Best streak: ') + b : null; } },
+    { id: 'clicker', title: lng('Пивной кликер', 'Beer Clicker'), icon: 'sports_bar', cls: 'c1', desc: lng('Кликай, строй пивоварни, копи миллиарды. Прогресс сохраняется.', 'Click, build breweries, stack billions. Progress is saved.'), stat: () => { const s = store.get('clicker', null); return s && s.total ? lng('Сварено: ', 'Brewed: ') + fmt(s.total) + ' 🍺' : null; } },
   ];
   const CASINO = [
-    { id: 'plinko', title: 'Плинко', icon: 'blur_on', cls: 'c1', desc: 'Шарик падает через штырьки. До ×1000 на высоком риске.' },
-    { id: 'crash', title: 'Ракетка', icon: 'rocket_launch', cls: 'c4', desc: 'Множитель растёт, пока ракета не взорвётся. Успей забрать!' },
-    { id: 'slots', title: 'Слоты', icon: 'casino', cls: 'c2', desc: 'Три барабана, пивной джекпот ×500.' },
-    { id: 'roulette', title: 'Рулетка', icon: 'motion_photos_on', cls: 'c3', desc: 'Европейская рулетка: числа, цвета, дюжины.' },
+    { id: 'plinko', title: lng('Плинко', 'Plinko'), icon: 'blur_on', cls: 'c1', desc: lng('Шарик падает через штырьки. До ×1000 на высоком риске.', 'The ball falls through the pegs. Up to ×1000 on high risk.') },
+    { id: 'crash', title: lng('Ракетка', 'Rocket'), icon: 'rocket_launch', cls: 'c4', desc: lng('Множитель растёт, пока ракета не взорвётся. Успей забрать!', 'The multiplier grows until the rocket explodes. Cash out in time!') },
+    { id: 'slots', title: lng('Слоты', 'Slots'), icon: 'casino', cls: 'c2', desc: lng('Три барабана, пивной джекпот ×500.', 'Three reels, a beer jackpot of ×500.') },
+    { id: 'roulette', title: lng('Рулетка', 'Roulette'), icon: 'motion_photos_on', cls: 'c3', desc: lng('Европейская рулетка: числа, цвета, дюжины.', 'European roulette: numbers, colors, dozens.') },
   ];
 
   function card(g, href) {
@@ -30,14 +30,14 @@
 
   function hub(tab) {
     return {
-      title: 'Игры',
+      title: lng('Игры', 'Games'),
       nav: 'games',
       mount(el) {
         el.appendChild(h(`
           <div>
             <div class="tabs" role="tablist">
-              <button role="tab" aria-selected="${tab === 'arcade'}" data-href="#/games"><span class="ms">sports_esports</span>Аркада</button>
-              <button role="tab" aria-selected="${tab === 'casino'}" data-href="#/casino"><span class="ms">casino</span>Казино</button>
+              <button role="tab" aria-selected="${tab === 'arcade'}" data-href="#/games"><span class="ms">sports_esports</span>${lng('Аркада', 'Arcade')}</button>
+              <button role="tab" aria-selected="${tab === 'casino'}" data-href="#/casino"><span class="ms">casino</span>${lng('Казино', 'Casino')}</button>
             </div>
             <div id="hubBody"></div>
           </div>`));
@@ -58,13 +58,13 @@
      САПЁР
      ===================================================== */
   const MINES_LEVELS = {
-    easy: { w: 9, h: 9, m: 10, name: 'Лёгкий' },
-    medium: { w: 12, h: 12, m: 24, name: 'Средний' },
-    hard: { w: 16, h: 16, m: 45, name: 'Сложный' },
+    easy: { w: 9, h: 9, m: 10, name: lng('Лёгкий', 'Easy') },
+    medium: { w: 12, h: 12, m: 24, name: lng('Средний', 'Medium') },
+    hard: { w: 16, h: 16, m: 45, name: lng('Сложный', 'Hard') },
   };
 
   Beer.route('play/mines', {
-    title: 'Сапёр',
+    title: lng('Сапёр', 'Minesweeper'),
     nav: 'games',
     back: '#/games',
     mount(el, sc) {
@@ -78,19 +78,19 @@
               <span class="chip assist"><span class="ms">flag</span><span id="mnLeft">0</span></span>
               <span class="chip assist"><span class="ms">timer</span><span id="mnTime" class="tabular">0:00</span></span>
               <span class="spacer"></span>
-              <button class="chip sl" id="mnFlag" aria-pressed="false"><span class="ms">flag</span>Режим флажков</button>
+              <button class="chip sl" id="mnFlag" aria-pressed="false"><span class="ms">flag</span>${lng('Режим флажков', 'Flag mode')}</button>
             </div>
             <div class="mines-board" id="mnBoard"></div>
           </div>
           <div class="panel">
-            <h3>Сложность</h3>
+            <h3>${lng('Сложность', 'Difficulty')}</h3>
             <div class="segmented block" id="mnLevels">
               ${Object.entries(MINES_LEVELS).map(([k, v]) => `<button data-l="${k}"><span class="ms">check</span>${v.name}</button>`).join('')}
             </div>
-            <button class="btn lg sl" id="mnNew"><span class="ms">refresh</span>Новая игра</button>
-            <div class="body-m muted">ЛКМ — открыть, ПКМ или долгое нажатие — флажок. Первый клик всегда безопасный. Клик по цифре открывает соседей, если флажков хватает.</div>
+            <button class="btn lg sl" id="mnNew"><span class="ms">refresh</span>${lng('Новая игра', 'New game')}</button>
+            <div class="body-m muted">${lng('ЛКМ — открыть, ПКМ или долгое нажатие — флажок. Первый клик всегда безопасный. Клик по цифре открывает соседей, если флажков хватает.', 'Left click opens, right click or long press places a flag. The first click is always safe. Clicking a number opens its neighbours if enough flags are placed.')}</div>
             <hr class="divider">
-            <h3>Рекорды</h3>
+            <h3>${lng('Рекорды', 'Records')}</h3>
             <div id="mnBest" class="body-m"></div>
           </div>
         </div>`));
@@ -208,8 +208,8 @@
         });
         cellEl(i).classList.add('boom');
         if (navigator.vibrate) navigator.vibrate([60, 40, 120]);
-        Beer.pop(board.parentElement, 'БУМ! 💥', 'lose');
-        snack('Подорвался. Ещё раз?', { action: 'Новая игра', onAction: newGame });
+        Beer.pop(board.parentElement, lng('БУМ! 💥', 'BOOM! 💥'), 'lose');
+        snack(lng('Подорвался. Ещё раз?', 'You blew up. Again?'), { action: lng('Новая игра', 'New game'), onAction: newGame });
       }
 
       function win() {
@@ -221,8 +221,8 @@
         const rec = !best[level] || t < best[level];
         if (rec) { best[level] = t; store.set('mines:best', best); renderBest(); }
         Beer.confetti();
-        Beer.pop(board.parentElement, 'Победа! ' + Beer.time(t), 'win');
-        snack(rec ? 'Новый рекорд: ' + Beer.time(t) + ' 🏆' : 'Разминировано за ' + Beer.time(t), { action: 'Ещё', onAction: newGame });
+        Beer.pop(board.parentElement, lng('Победа! ', 'Victory! ') + Beer.time(t), 'win');
+        snack(rec ? lng('Новый рекорд: ', 'New record: ') + Beer.time(t) + ' 🏆' : lng('Разминировано за ', 'Cleared in ') + Beer.time(t), { action: lng('Ещё', 'Again'), onAction: newGame });
       }
 
       // ввод: клик, ПКМ, долгое нажатие
@@ -271,7 +271,7 @@
      ЗМЕЙКА
      ===================================================== */
   Beer.route('play/snake', {
-    title: 'Змейка',
+    title: lng('Змейка', 'Snake'),
     nav: 'games',
     back: '#/games',
     mount(el, sc) {
@@ -283,16 +283,16 @@
         <div class="game-layout">
           <div class="stage">
             <div class="scorebar">
-              <span class="chip assist"><span class="ms">sports_bar</span>Счёт: <b id="snScore">0</b></span>
-              <span class="chip assist"><span class="ms">emoji_events</span>Рекорд: <b id="snBest">0</b></span>
+              <span class="chip assist"><span class="ms">sports_bar</span>${lng('Счёт', 'Score')}: <b id="snScore">0</b></span>
+              <span class="chip assist"><span class="ms">emoji_events</span>${lng('Рекорд', 'Best')}: <b id="snBest">0</b></span>
             </div>
             <div class="snake-wrap">
               <canvas id="snCanvas" width="600" height="600"></canvas>
               <div class="overlay" id="snOverlay">
                 <div style="font-size:56px">🐍</div>
-                <div class="headline-s" id="snMsg">Змейка</div>
-                <div class="body-m muted" id="snSub">Стрелки / WASD / свайпы. Пробел — пауза.</div>
-                <button class="btn lg sl" id="snStart"><span class="ms">play_arrow</span>Играть</button>
+                <div class="headline-s" id="snMsg">${lng('Змейка', 'Snake')}</div>
+                <div class="body-m muted" id="snSub">${lng('Стрелки / WASD / свайпы. Пробел — пауза.', 'Arrows / WASD / swipes. Space pauses.')}</div>
+                <button class="btn lg sl" id="snStart"><span class="ms">play_arrow</span>${lng('Играть', 'Play')}</button>
               </div>
             </div>
             <div class="dpad">
@@ -303,12 +303,12 @@
             </div>
           </div>
           <div class="panel">
-            <h3>Режим стен</h3>
+            <h3>${lng('Режим стен', 'Walls')}</h3>
             <div class="segmented block" id="snWalls">
-              <button data-w="0"><span class="ms">check</span>Стены убивают</button>
-              <button data-w="1"><span class="ms">check</span>Сквозные</button>
+              <button data-w="0"><span class="ms">check</span>${lng('Стены убивают', 'Walls kill')}</button>
+              <button data-w="1"><span class="ms">check</span>${lng('Сквозные', 'Wrap around')}</button>
             </div>
-            <div class="body-m muted">🍺 — +1 и змейка растёт. 🌭 появляется ненадолго и даёт +5. Чем длиннее змейка, тем быстрее она ползёт.</div>
+            <div class="body-m muted">${lng('🍺 — +1 и змейка растёт. 🌭 появляется ненадолго и даёт +5. Чем длиннее змейка, тем быстрее она ползёт.', '🍺 gives +1 and the snake grows. 🌭 shows up for a short time and gives +5. The longer the snake, the faster it crawls.')}</div>
           </div>
         </div>`));
 
@@ -355,9 +355,9 @@
       function pause() {
         if (state !== 'play') return;
         state = 'paused';
-        $('#snMsg', el).textContent = 'Пауза';
-        $('#snSub', el).textContent = 'Счёт: ' + score;
-        $('#snStart', el).innerHTML = '<span class="ms">play_arrow</span>Продолжить';
+        $('#snMsg', el).textContent = lng('Пауза', 'Paused');
+        $('#snSub', el).textContent = lng('Счёт: ', 'Score: ') + score;
+        $('#snStart', el).innerHTML = '<span class="ms">play_arrow</span>' + lng('Продолжить', 'Resume');
         overlay.hidden = false;
       }
       function resume() { state = 'play'; overlay.hidden = true; }
@@ -370,11 +370,11 @@
         if (score > best) {
           store.set('snake:best', score);
           $('#snBest', el).textContent = score;
-          $('#snMsg', el).textContent = 'Новый рекорд! 🏆';
+          $('#snMsg', el).textContent = lng('Новый рекорд! 🏆', 'New record! 🏆');
           if (score > 0) Beer.confetti(40);
-        } else $('#snMsg', el).textContent = 'Игра окончена';
-        $('#snSub', el).textContent = 'Счёт: ' + score;
-        $('#snStart', el).innerHTML = '<span class="ms">replay</span>Ещё раз';
+        } else $('#snMsg', el).textContent = lng('Игра окончена', 'Game over');
+        $('#snSub', el).textContent = lng('Счёт: ', 'Score: ') + score;
+        $('#snStart', el).innerHTML = '<span class="ms">replay</span>' + lng('Ещё раз', 'Play again');
         overlay.hidden = false;
       }
 
@@ -481,27 +481,27 @@
      ФЛАГИ
      ===================================================== */
   const COUNTRIES = [
-    ['ru', 'Россия'], ['ua', 'Украина'], ['by', 'Беларусь'], ['kz', 'Казахстан'], ['us', 'США'], ['gb', 'Великобритания'],
-    ['de', 'Германия'], ['fr', 'Франция'], ['it', 'Италия'], ['es', 'Испания'], ['pt', 'Португалия'], ['nl', 'Нидерланды'],
-    ['be', 'Бельгия'], ['ch', 'Швейцария'], ['at', 'Австрия'], ['pl', 'Польша'], ['cz', 'Чехия'], ['sk', 'Словакия'],
-    ['hu', 'Венгрия'], ['ro', 'Румыния'], ['bg', 'Болгария'], ['gr', 'Греция'], ['tr', 'Турция'], ['se', 'Швеция'],
-    ['no', 'Норвегия'], ['fi', 'Финляндия'], ['dk', 'Дания'], ['is', 'Исландия'], ['ie', 'Ирландия'], ['ee', 'Эстония'],
-    ['lv', 'Латвия'], ['lt', 'Литва'], ['md', 'Молдова'], ['ge', 'Грузия'], ['am', 'Армения'], ['az', 'Азербайджан'],
-    ['uz', 'Узбекистан'], ['kg', 'Киргизия'], ['tj', 'Таджикистан'], ['tm', 'Туркменистан'], ['mn', 'Монголия'], ['cn', 'Китай'],
-    ['jp', 'Япония'], ['kr', 'Южная Корея'], ['kp', 'КНДР'], ['in', 'Индия'], ['pk', 'Пакистан'], ['bd', 'Бангладеш'],
-    ['th', 'Таиланд'], ['vn', 'Вьетнам'], ['id', 'Индонезия'], ['my', 'Малайзия'], ['ph', 'Филиппины'], ['sg', 'Сингапур'],
-    ['au', 'Австралия'], ['nz', 'Новая Зеландия'], ['ca', 'Канада'], ['mx', 'Мексика'], ['br', 'Бразилия'], ['ar', 'Аргентина'],
-    ['cl', 'Чили'], ['co', 'Колумбия'], ['pe', 'Перу'], ['ve', 'Венесуэла'], ['cu', 'Куба'], ['jm', 'Ямайка'],
-    ['eg', 'Египет'], ['za', 'ЮАР'], ['ng', 'Нигерия'], ['ke', 'Кения'], ['ma', 'Марокко'], ['dz', 'Алжир'],
-    ['tn', 'Тунис'], ['et', 'Эфиопия'], ['gh', 'Гана'], ['sn', 'Сенегал'], ['cm', 'Камерун'], ['sa', 'Саудовская Аравия'],
-    ['ae', 'ОАЭ'], ['il', 'Израиль'], ['ir', 'Иран'], ['iq', 'Ирак'], ['sy', 'Сирия'], ['lb', 'Ливан'],
-    ['jo', 'Иордания'], ['qa', 'Катар'], ['kw', 'Кувейт'], ['af', 'Афганистан'], ['np', 'Непал'], ['lk', 'Шри-Ланка'],
-    ['rs', 'Сербия'], ['hr', 'Хорватия'], ['si', 'Словения'], ['ba', 'Босния и Герцеговина'], ['me', 'Черногория'], ['mk', 'Северная Македония'],
-    ['al', 'Албания'], ['cy', 'Кипр'], ['mt', 'Мальта'], ['lu', 'Люксембург'], ['mc', 'Монако'], ['va', 'Ватикан'],
-  ];
+    ['ru', 'Россия', 'Russia'], ['ua', 'Украина', 'Ukraine'], ['by', 'Беларусь', 'Belarus'], ['kz', 'Казахстан', 'Kazakhstan'], ['us', 'США', 'USA'], ['gb', 'Великобритания', 'United Kingdom'],
+    ['de', 'Германия', 'Germany'], ['fr', 'Франция', 'France'], ['it', 'Италия', 'Italy'], ['es', 'Испания', 'Spain'], ['pt', 'Португалия', 'Portugal'], ['nl', 'Нидерланды', 'Netherlands'],
+    ['be', 'Бельгия', 'Belgium'], ['ch', 'Швейцария', 'Switzerland'], ['at', 'Австрия', 'Austria'], ['pl', 'Польша', 'Poland'], ['cz', 'Чехия', 'Czechia'], ['sk', 'Словакия', 'Slovakia'],
+    ['hu', 'Венгрия', 'Hungary'], ['ro', 'Румыния', 'Romania'], ['bg', 'Болгария', 'Bulgaria'], ['gr', 'Греция', 'Greece'], ['tr', 'Турция', 'Turkey'], ['se', 'Швеция', 'Sweden'],
+    ['no', 'Норвегия', 'Norway'], ['fi', 'Финляндия', 'Finland'], ['dk', 'Дания', 'Denmark'], ['is', 'Исландия', 'Iceland'], ['ie', 'Ирландия', 'Ireland'], ['ee', 'Эстония', 'Estonia'],
+    ['lv', 'Латвия', 'Latvia'], ['lt', 'Литва', 'Lithuania'], ['md', 'Молдова', 'Moldova'], ['ge', 'Грузия', 'Georgia'], ['am', 'Армения', 'Armenia'], ['az', 'Азербайджан', 'Azerbaijan'],
+    ['uz', 'Узбекистан', 'Uzbekistan'], ['kg', 'Киргизия', 'Kyrgyzstan'], ['tj', 'Таджикистан', 'Tajikistan'], ['tm', 'Туркменистан', 'Turkmenistan'], ['mn', 'Монголия', 'Mongolia'], ['cn', 'Китай', 'China'],
+    ['jp', 'Япония', 'Japan'], ['kr', 'Южная Корея', 'South Korea'], ['kp', 'КНДР', 'North Korea'], ['in', 'Индия', 'India'], ['pk', 'Пакистан', 'Pakistan'], ['bd', 'Бангладеш', 'Bangladesh'],
+    ['th', 'Таиланд', 'Thailand'], ['vn', 'Вьетнам', 'Vietnam'], ['id', 'Индонезия', 'Indonesia'], ['my', 'Малайзия', 'Malaysia'], ['ph', 'Филиппины', 'Philippines'], ['sg', 'Сингапур', 'Singapore'],
+    ['au', 'Австралия', 'Australia'], ['nz', 'Новая Зеландия', 'New Zealand'], ['ca', 'Канада', 'Canada'], ['mx', 'Мексика', 'Mexico'], ['br', 'Бразилия', 'Brazil'], ['ar', 'Аргентина', 'Argentina'],
+    ['cl', 'Чили', 'Chile'], ['co', 'Колумбия', 'Colombia'], ['pe', 'Перу', 'Peru'], ['ve', 'Венесуэла', 'Venezuela'], ['cu', 'Куба', 'Cuba'], ['jm', 'Ямайка', 'Jamaica'],
+    ['eg', 'Египет', 'Egypt'], ['za', 'ЮАР', 'South Africa'], ['ng', 'Нигерия', 'Nigeria'], ['ke', 'Кения', 'Kenya'], ['ma', 'Марокко', 'Morocco'], ['dz', 'Алжир', 'Algeria'],
+    ['tn', 'Тунис', 'Tunisia'], ['et', 'Эфиопия', 'Ethiopia'], ['gh', 'Гана', 'Ghana'], ['sn', 'Сенегал', 'Senegal'], ['cm', 'Камерун', 'Cameroon'], ['sa', 'Саудовская Аравия', 'Saudi Arabia'],
+    ['ae', 'ОАЭ', 'UAE'], ['il', 'Израиль', 'Israel'], ['ir', 'Иран', 'Iran'], ['iq', 'Ирак', 'Iraq'], ['sy', 'Сирия', 'Syria'], ['lb', 'Ливан', 'Lebanon'],
+    ['jo', 'Иордания', 'Jordan'], ['qa', 'Катар', 'Qatar'], ['kw', 'Кувейт', 'Kuwait'], ['af', 'Афганистан', 'Afghanistan'], ['np', 'Непал', 'Nepal'], ['lk', 'Шри-Ланка', 'Sri Lanka'],
+    ['rs', 'Сербия', 'Serbia'], ['hr', 'Хорватия', 'Croatia'], ['si', 'Словения', 'Slovenia'], ['ba', 'Босния и Герцеговина', 'Bosnia and Herzegovina'], ['me', 'Черногория', 'Montenegro'], ['mk', 'Северная Македония', 'North Macedonia'],
+    ['al', 'Албания', 'Albania'], ['cy', 'Кипр', 'Cyprus'], ['mt', 'Мальта', 'Malta'], ['lu', 'Люксембург', 'Luxembourg'], ['mc', 'Монако', 'Monaco'], ['va', 'Ватикан', 'Vatican City'],
+  ].map(([code, ru, en]) => [code, lng(ru, en)]);
 
   Beer.route('play/flags', {
-    title: 'Флаги',
+    title: lng('Флаги', 'Flags'),
     nav: 'games',
     back: '#/games',
     mount(el, sc) {
@@ -513,8 +513,8 @@
         <div class="game-layout">
           <div class="stage">
             <div class="scorebar">
-              <span class="chip assist"><span class="ms">local_fire_department</span>Серия: <b id="fgStreak">0</b></span>
-              <span class="chip assist"><span class="ms">emoji_events</span>Рекорд: <b id="fgBest">0</b></span>
+              <span class="chip assist"><span class="ms">local_fire_department</span>${lng('Серия', 'Streak')}: <b id="fgStreak">0</b></span>
+              <span class="chip assist"><span class="ms">emoji_events</span>${lng('Рекорд', 'Best')}: <b id="fgBest">0</b></span>
               <span class="chip assist"><span class="ms fill">favorite</span><b id="fgLives">3</b></span>
             </div>
             <div class="flag-stage">
@@ -524,16 +524,16 @@
             </div>
           </div>
           <div class="panel">
-            <h3>Режим</h3>
+            <h3>${lng('Режим', 'Mode')}</h3>
             <div class="segmented block" id="fgMode">
-              <button data-t="0"><span class="ms">check</span>Спокойно</button>
-              <button data-t="1"><span class="ms">check</span>На время</button>
+              <button data-t="0"><span class="ms">check</span>${lng('Спокойно', 'Relaxed')}</button>
+              <button data-t="1"><span class="ms">check</span>${lng('На время', 'Timed')}</button>
             </div>
-            <div class="body-m muted">3 жизни. Ошибка отнимает жизнь, серия продолжается до последней. В режиме «На время» — 7 секунд на ответ.</div>
+            <div class="body-m muted">${lng('3 жизни. Ошибка отнимает жизнь, серия продолжается до последней. В режиме «На время» — 7 секунд на ответ.', '3 lives. A mistake costs a life, the streak goes on until the last one. In Timed mode you get 7 seconds per answer.')}</div>
             <hr class="divider">
-            <div class="row"><span>Правильных ответов</span><span class="spacer"></span><b id="fgTotal">0</b></div>
-            <div class="row"><span>Точность</span><span class="spacer"></span><b id="fgAcc">—</b></div>
-            <button class="btn tonal sl" id="fgRestart"><span class="ms">replay</span>Начать заново</button>
+            <div class="row"><span>${lng('Правильных ответов', 'Correct answers')}</span><span class="spacer"></span><b id="fgTotal">0</b></div>
+            <div class="row"><span>${lng('Точность', 'Accuracy')}</span><span class="spacer"></span><b id="fgAcc">—</b></div>
+            <button class="btn tonal sl" id="fgRestart"><span class="ms">replay</span>${lng('Начать заново', 'Start over')}</button>
           </div>
         </div>`));
 
@@ -562,7 +562,7 @@
           if (!options.includes(r)) options.push(r);
         }
         Beer.shuffle(options);
-        $('#fgWrap', el).innerHTML = `<img src="assets/flags/${c[0]}.svg" alt="Флаг" draggable="false">`;
+        $('#fgWrap', el).innerHTML = `<img src="assets/flags/${c[0]}.svg" alt="${lng('Флаг', 'Flag')}" draggable="false">`;
         // предзагрузка следующих не нужна — картинки маленькие
         opts.innerHTML = '';
         options.forEach((o) => {
@@ -583,7 +583,7 @@
           streak++; correctTotal++;
           const best = store.get('flags:best', 0);
           if (streak > best) { store.set('flags:best', streak); $('#fgBest', el).textContent = streak; }
-          if (streak > 0 && streak % 10 === 0) { Beer.confetti(40); snack('Серия ' + streak + '! 🔥'); }
+          if (streak > 0 && streak % 10 === 0) { Beer.confetti(40); snack(lng('Серия ', 'Streak ') + streak + '! 🔥'); }
         } else {
           if (btn) btn.classList.add('wrong');
           lives--;
@@ -592,7 +592,7 @@
         upd();
         if (lives <= 0) {
           sc.timeout(async () => {
-            const again = await Beer.dialog({ icon: 'public', title: 'Игра окончена', text: `Серия: ${streak}. Правильных ответов: ${correctTotal}.`, actions: [{ label: 'В меню', value: false }, { label: 'Ещё раз', value: true, style: '' }] });
+            const again = await Beer.dialog({ icon: 'public', title: lng('Игра окончена', 'Game over'), text: lng(`Серия: ${streak}. Правильных ответов: ${correctTotal}.`, `Streak: ${streak}. Correct answers: ${correctTotal}.`), actions: [{ label: lng('В меню', 'Menu'), value: false }, { label: lng('Ещё раз', 'Play again'), value: true, style: '' }] });
             if (again) restart(); else location.hash = '#/games';
           }, 900);
           return;
@@ -606,7 +606,7 @@
         if (!timerOn || locked || lives <= 0) return;
         timeLeft -= 0.1;
         $('#fgTimer > div', el).style.width = Math.max(0, (timeLeft / 7) * 100) + '%';
-        if (timeLeft <= 0) { snack('Время вышло ⏰'); answer(null, null); }
+        if (timeLeft <= 0) { snack(lng('Время вышло ⏰', 'Time’s up ⏰')); answer(null, null); }
       }, 100);
       sc.on(document, 'keydown', (e) => {
         const n = parseInt(e.key, 10);
@@ -623,27 +623,27 @@
      КЛИКЕР (сохранение прогресса + оффлайн-доход)
      ===================================================== */
   const BUILDINGS = [
-    { id: 'mug', name: 'Кружка', icon: '🍺', base: 15, cps: 0.1, desc: 'Сама себя наливает' },
-    { id: 'tap', name: 'Пивной кран', icon: '🚰', base: 100, cps: 1, desc: 'Течёт без остановки' },
-    { id: 'keg', name: 'Кег', icon: '🛢️', base: 1100, cps: 8, desc: '50 литров счастья' },
-    { id: 'bar', name: 'Бар', icon: '🍻', base: 12000, cps: 47, desc: 'Бармен работает за тебя' },
-    { id: 'brew', name: 'Пивоварня', icon: '🏭', base: 130000, cps: 260, desc: 'Крафт в промышленных масштабах' },
-    { id: 'farm', name: 'Хмелевая ферма', icon: '🌿', base: 1400000, cps: 1400, desc: 'Свой хмель — своё пиво' },
-    { id: 'fest', name: 'Октоберфест', icon: '🎪', base: 20000000, cps: 7800, desc: 'Праздник каждый день' },
-    { id: 'river', name: 'Пивная река', icon: '🌊', base: 330000000, cps: 44000, desc: 'Течёт прямо в кружку' },
-    { id: 'planet', name: 'Пивная планета', icon: '🪐', base: 5.1e9, cps: 260000, desc: 'Океаны из лагера' },
-    { id: 'portal', name: 'Портал в Пивляндию', icon: '🌀', base: 7.5e10, cps: 1.6e6, desc: 'Бесконечный налив' },
+    { id: 'mug', name: lng('Кружка', 'Mug'), icon: '🍺', base: 15, cps: 0.1, desc: lng('Сама себя наливает', 'Pours itself') },
+    { id: 'tap', name: lng('Пивной кран', 'Beer tap'), icon: '🚰', base: 100, cps: 1, desc: lng('Течёт без остановки', 'Never stops flowing') },
+    { id: 'keg', name: lng('Кег', 'Keg'), icon: '🛢️', base: 1100, cps: 8, desc: lng('50 литров счастья', '50 liters of happiness') },
+    { id: 'bar', name: lng('Бар', 'Bar'), icon: '🍻', base: 12000, cps: 47, desc: lng('Бармен работает за тебя', 'The bartender works for you') },
+    { id: 'brew', name: lng('Пивоварня', 'Brewery'), icon: '🏭', base: 130000, cps: 260, desc: lng('Крафт в промышленных масштабах', 'Craft on an industrial scale') },
+    { id: 'farm', name: lng('Хмелевая ферма', 'Hop farm'), icon: '🌿', base: 1400000, cps: 1400, desc: lng('Свой хмель — своё пиво', 'Your own hops, your own beer') },
+    { id: 'fest', name: lng('Октоберфест', 'Oktoberfest'), icon: '🎪', base: 20000000, cps: 7800, desc: lng('Праздник каждый день', 'A party every day') },
+    { id: 'river', name: lng('Пивная река', 'Beer river'), icon: '🌊', base: 330000000, cps: 44000, desc: lng('Течёт прямо в кружку', 'Flows right into your mug') },
+    { id: 'planet', name: lng('Пивная планета', 'Beer planet'), icon: '🪐', base: 5.1e9, cps: 260000, desc: lng('Океаны из лагера', 'Oceans of lager') },
+    { id: 'portal', name: lng('Портал в Пивляндию', 'Portal to Beerland'), icon: '🌀', base: 7.5e10, cps: 1.6e6, desc: lng('Бесконечный налив', 'Endless pour') },
   ];
   const UPGRADES = [
-    { id: 'c1', name: 'Крепкий палец', icon: '👆', cost: 100, desc: 'Клик ×2', type: 'click', mult: 2 },
-    { id: 'c2', name: 'Пивная мышка', icon: '🖱️', cost: 2000, desc: 'Клик ×2', type: 'click', mult: 2 },
-    { id: 'c3', name: 'Железная рука', icon: '🦾', cost: 50000, desc: 'Клик ×3', type: 'click', mult: 3 },
-    { id: 'c4', name: 'Клик-машина', icon: '⚙️', cost: 2e6, desc: 'Клик ×5', type: 'click', mult: 5 },
-    { id: 'cp', name: 'Синергия', icon: '🔗', cost: 5e5, desc: 'Клик даёт +1% от дохода в секунду', type: 'cpsclick' },
-    { id: 'm1', name: 'Хмелевая магия', icon: '✨', cost: 5000, desc: 'Весь доход ×1.5', type: 'all', mult: 1.5 },
-    { id: 'm2', name: 'Секретный рецепт', icon: '📜', cost: 250000, desc: 'Весь доход ×2', type: 'all', mult: 2 },
-    { id: 'm3', name: 'Золотой солод', icon: '🌾', cost: 3e7, desc: 'Весь доход ×2', type: 'all', mult: 2 },
-    { id: 'm4', name: 'Пивной бог', icon: '👑', cost: 5e9, desc: 'Весь доход ×3', type: 'all', mult: 3 },
+    { id: 'c1', name: lng('Крепкий палец', 'Strong finger'), icon: '👆', cost: 100, desc: lng('Клик ×2', 'Click ×2'), type: 'click', mult: 2 },
+    { id: 'c2', name: lng('Пивная мышка', 'Beer mouse'), icon: '🖱️', cost: 2000, desc: lng('Клик ×2', 'Click ×2'), type: 'click', mult: 2 },
+    { id: 'c3', name: lng('Железная рука', 'Iron hand'), icon: '🦾', cost: 50000, desc: lng('Клик ×3', 'Click ×3'), type: 'click', mult: 3 },
+    { id: 'c4', name: lng('Клик-машина', 'Click machine'), icon: '⚙️', cost: 2e6, desc: lng('Клик ×5', 'Click ×5'), type: 'click', mult: 5 },
+    { id: 'cp', name: lng('Синергия', 'Synergy'), icon: '🔗', cost: 5e5, desc: lng('Клик даёт +1% от дохода в секунду', 'A click gives +1% of income per second'), type: 'cpsclick' },
+    { id: 'm1', name: lng('Хмелевая магия', 'Hop magic'), icon: '✨', cost: 5000, desc: lng('Весь доход ×1.5', 'All income ×1.5'), type: 'all', mult: 1.5 },
+    { id: 'm2', name: lng('Секретный рецепт', 'Secret recipe'), icon: '📜', cost: 250000, desc: lng('Весь доход ×2', 'All income ×2'), type: 'all', mult: 2 },
+    { id: 'm3', name: lng('Золотой солод', 'Golden malt'), icon: '🌾', cost: 3e7, desc: lng('Весь доход ×2', 'All income ×2'), type: 'all', mult: 2 },
+    { id: 'm4', name: lng('Пивной бог', 'Beer god'), icon: '👑', cost: 5e9, desc: lng('Весь доход ×3', 'All income ×3'), type: 'all', mult: 3 },
   ];
   const OFFLINE_CAP = 3 * 3600;
 
@@ -660,7 +660,7 @@
   }
 
   Beer.route('play/clicker', {
-    title: 'Пивной кликер',
+    title: lng('Пивной кликер', 'Beer Clicker'),
     nav: 'games',
     back: '#/games',
     mount(el, sc) {
@@ -685,25 +685,25 @@
           <div class="stage">
             <div class="clicker-top">
               <div class="big" id="ckBeer">0</div>
-              <div class="body-m muted">кружек пива · <b id="ckCps">0</b> в сек · <b id="ckPc">1</b> за клик</div>
+              <div class="body-m muted">${lng('кружек пива', 'mugs of beer')} · <b id="ckCps">0</b> ${lng('в сек', 'per sec')} · <b id="ckPc">1</b> ${lng('за клик', 'per click')}</div>
             </div>
-            <button class="clicker-btn" id="ckBtn" aria-label="Кликнуть">🍺</button>
+            <button class="clicker-btn" id="ckBtn" aria-label="${lng('Кликнуть', 'Click')}">🍺</button>
             <div class="stat-grid">
-              <div class="stat"><b id="ckTotal">0</b><span>сварено всего</span></div>
-              <div class="stat"><b id="ckClicks">0</b><span>кликов</span></div>
-              <div class="stat"><b id="ckBuild">0</b><span>построек</span></div>
+              <div class="stat"><b id="ckTotal">0</b><span>${lng('сварено всего', 'brewed in total')}</span></div>
+              <div class="stat"><b id="ckClicks">0</b><span>${lng('кликов', 'clicks')}</span></div>
+              <div class="stat"><b id="ckBuild">0</b><span>${lng('построек', 'buildings')}</span></div>
             </div>
           </div>
           <div class="panel">
             <div class="segmented block" id="ckTabs">
-              <button data-t="b"><span class="ms">check</span>Постройки</button>
-              <button data-t="u"><span class="ms">check</span>Улучшения</button>
+              <button data-t="b"><span class="ms">check</span>${lng('Постройки', 'Buildings')}</button>
+              <button data-t="u"><span class="ms">check</span>${lng('Улучшения', 'Upgrades')}</button>
             </div>
             <div class="shop-list" id="ckShop"></div>
             <div class="row">
-              <span class="body-s muted"><span class="ms" style="font-size:14px;vertical-align:-2px">cloud_done</span> Прогресс сохраняется автоматически</span>
+              <span class="body-s muted"><span class="ms" style="font-size:14px;vertical-align:-2px">cloud_done</span> ${lng('Прогресс сохраняется автоматически', 'Progress is saved automatically')}</span>
               <span class="spacer"></span>
-              <button class="btn text sl" id="ckReset">Сбросить</button>
+              <button class="btn text sl" id="ckReset">${lng('Сбросить', 'Reset')}</button>
             </div>
           </div>
         </div>`));
@@ -725,8 +725,8 @@
             if (!unlocked) { if (shownLocked++) return ''; }
             return `<button class="shop-item ${unlocked ? '' : 'locked'}" data-b="${b.id}" ${unlocked ? '' : 'disabled'}>
               <span class="ico">${unlocked ? b.icon : '❓'}</span>
-              <span><div class="nm">${unlocked ? esc(b.name) : '???'}</div><div class="ds">${unlocked ? esc(b.desc) + ' · +' + fmt(b.cps * allMult()) + '/с' : 'Купи предыдущую постройку'}</div></span>
-              <span><div class="pr">${fmt(cost(b))} 🍺</div><div class="cnt">${st.owned[b.id] || 0} шт.</div></span>
+              <span><div class="nm">${unlocked ? esc(b.name) : '???'}</div><div class="ds">${unlocked ? esc(b.desc) + ' · +' + fmt(b.cps * allMult()) + lng('/с', '/s') : lng('Купи предыдущую постройку', 'Buy the previous building')}</div></span>
+              <span><div class="pr">${fmt(cost(b))} 🍺</div><div class="cnt">${st.owned[b.id] || 0} ${lng('шт.', 'pcs')}</div></span>
             </button>`;
           }).join('');
         } else {
@@ -735,7 +735,7 @@
               <span class="ico">${u.icon}</span>
               <span><div class="nm">${esc(u.name)}</div><div class="ds">${esc(u.desc)}</div></span>
               <span><div class="pr">${fmt(u.cost)} 🍺</div></span>
-            </button>`).join('') : '<div class="body-m muted" style="text-align:center;padding:24px">Все улучшения куплены 👑</div>';
+            </button>`).join('') : `<div class="body-m muted" style="text-align:center;padding:24px">${lng('Все улучшения куплены 👑', 'All upgrades bought 👑')}</div>`;
         }
         refreshAffordable();
       }
@@ -756,7 +756,7 @@
         $('#ckTotal', el).textContent = fmt(Math.floor(st.total));
         $('#ckClicks', el).textContent = fmt(st.clicks);
         $('#ckBuild', el).textContent = Object.values(st.owned).reduce((a, b) => a + b, 0);
-        document.title = fmt(Math.floor(st.beer)) + ' 🍺 · Кликер';
+        document.title = fmt(Math.floor(st.beer)) + ' 🍺 · ' + lng('Кликер', 'Clicker');
       }
 
       shop.addEventListener('click', (e) => {
@@ -765,15 +765,15 @@
         if (it.dataset.b) {
           const b = BUILDINGS.find((x) => x.id === it.dataset.b);
           const c = cost(b);
-          if (st.beer < c) return snack('Не хватает ' + fmt(c - st.beer) + ' 🍺');
+          if (st.beer < c) return snack(lng('Не хватает ', 'Not enough: ') + fmt(c - st.beer) + ' 🍺');
           st.beer -= c;
           st.owned[b.id] = (st.owned[b.id] || 0) + 1;
         } else if (it.dataset.u) {
           const u = UPGRADES.find((x) => x.id === it.dataset.u);
-          if (st.beer < u.cost) return snack('Не хватает ' + fmt(u.cost - st.beer) + ' 🍺');
+          if (st.beer < u.cost) return snack(lng('Не хватает ', 'Not enough: ') + fmt(u.cost - st.beer) + ' 🍺');
           st.beer -= u.cost;
           st.ups.push(u.id);
-          snack('Куплено: ' + u.name);
+          snack(lng('Куплено: ', 'Bought: ') + u.name);
         }
         save(); renderShop(); updStats();
       });
@@ -800,7 +800,7 @@
 
       $$('#ckTabs button', el).forEach((b) => (b.onclick = () => { shopTab = b.dataset.t; renderShop(); }));
       $('#ckReset', el).onclick = async () => {
-        const ok = await Beer.dialog({ icon: 'delete_forever', title: 'Сбросить прогресс?', text: 'Все кружки, постройки и улучшения пропадут навсегда.', actions: [{ label: 'Отмена', value: false }, { label: 'Сбросить', value: true, style: 'danger' }] });
+        const ok = await Beer.dialog({ icon: 'delete_forever', title: lng('Сбросить прогресс?', 'Reset progress?'), text: lng('Все кружки, постройки и улучшения пропадут навсегда.', 'All mugs, buildings and upgrades will be gone forever.'), actions: [{ label: lng('Отмена', 'Cancel'), value: false }, { label: lng('Сбросить', 'Reset'), value: true, style: 'danger' }] });
         if (!ok) return;
         Object.assign(st, { beer: 0, total: 0, clicks: 0, owned: {}, ups: [] });
         save(); renderShop(); updStats();
@@ -826,7 +826,7 @@
 
       if (offline > 0) {
         st.beer += offline; st.total += offline;
-        sc.timeout(() => snack(`Пока тебя не было, сварилось +${fmt(offline)} 🍺`, { duration: 5000 }), 400);
+        sc.timeout(() => snack(lng(`Пока тебя не было, сварилось +${fmt(offline)} 🍺`, `While you were away, +${fmt(offline)} 🍺 got brewed`), { duration: 5000 }), 400);
       }
       save();
       renderShop();

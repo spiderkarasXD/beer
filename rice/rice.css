@@ -3,6 +3,7 @@
    ========================================================= */
 
 .topbar .back { text-decoration: none; }
+.rice-lang { min-width: 48px; padding: 0 12px; font-weight: 700; letter-spacing: .5px; }
 .rice-hero { background: var(--md-tertiary-container); color: var(--md-on-tertiary-container); }
 
 .rice-layout { display: grid; grid-template-columns: 380px minmax(0, 1fr); gap: 24px; align-items: start; }

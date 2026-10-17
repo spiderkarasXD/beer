@@ -146,6 +146,7 @@ a { color: inherit; }
 .user .hi { font-size: 12px; line-height: 15px; }
 .user .hi span { color: var(--orange); }
 .user .hi b { display: block; font-size: 14px; font-weight: 600; color: #fff; }
+.user .hi .lbl { color: inherit; }
 .user .hi .bal { color: var(--yellow); font-weight: 700; font-variant-numeric: tabular-nums; transition: color .2s; }
 .user .hi .bal.up { color: var(--green); }
 .user .hi .bal.down { color: var(--red); }
@@ -157,6 +158,14 @@ a { color: inherit; }
 }
 .wallet-btn:hover { background: rgba(255, 199, 0, .18); }
 .wallet-btn svg { width: 26px; height: 26px; }
+.lang-btn {
+  height: 46px; min-width: 46px; padding: 0 10px;
+  border: 2px solid var(--line); border-radius: 12px;
+  background: var(--panel); color: var(--text);
+  font: 700 14px/1 var(--cond); letter-spacing: .5px;
+  cursor: pointer;
+}
+.lang-btn:hover { border-color: var(--muted); }
 
 /* ---------- buttons / inputs ---------- */
 .btn {

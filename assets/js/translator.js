@@ -41,29 +41,29 @@
           <section class="hero">
             <div class="bubbles"></div>
             <span class="mug">🍺</span>
-            <h1>Переводчик на <b>пивной</b> язык</h1>
-            <p>Пиши по-русски или по-английски — получай шифр, понятный только настоящим ценителям. Работает и в обратную сторону.</p>
+            <h1>${lng('Переводчик на <b>пивной</b> язык', 'Translator into the <b>beer</b> language')}</h1>
+            <p>${lng('Пиши по-русски или по-английски — получай шифр, понятный только настоящим ценителям. Работает и в обратную сторону.', 'Write in Russian or English and get a cipher only true connoisseurs understand. Works the other way too.')}</p>
           </section>
 
           <div class="tr-controls">
-            <div class="segmented" role="group" aria-label="Направление">
-              <button data-mode="text"><span class="ms">check</span>Текст → Пивной</button>
-              <button data-mode="beer"><span class="ms">check</span>Пивной → Текст</button>
+            <div class="segmented" role="group" aria-label="${lng('Направление', 'Direction')}">
+              <button data-mode="text"><span class="ms">check</span>${lng('Текст → Пивной', 'Text → Beer')}</button>
+              <button data-mode="beer"><span class="ms">check</span>${lng('Пивной → Текст', 'Beer → Text')}</button>
             </div>
-            <button class="btn tonal sl" id="trSwap"><span class="ms">swap_horiz</span>Поменять</button>
+            <button class="btn tonal sl" id="trSwap"><span class="ms">swap_horiz</span>${lng('Поменять', 'Swap')}</button>
           </div>
 
           <div class="tr-grid">
             <div class="tr-pane in">
               <header>
                 <span class="label-l lang" id="trInLabel"></span>
-                <button class="icon-btn sl" id="trPaste" title="Вставить"><span class="ms">content_paste</span></button>
-                <button class="icon-btn sl" id="trClear" title="Очистить"><span class="ms">close</span></button>
+                <button class="icon-btn sl" id="trPaste" title="${lng('Вставить', 'Paste')}"><span class="ms">content_paste</span></button>
+                <button class="icon-btn sl" id="trClear" title="${lng('Очистить', 'Clear')}"><span class="ms">close</span></button>
               </header>
-              <textarea id="trInput" spellcheck="false" aria-label="Исходный текст"></textarea>
+              <textarea id="trInput" spellcheck="false" aria-label="${lng('Исходный текст', 'Source text')}"></textarea>
               <footer>
-                <span class="count" id="trCount">0 символов</span>
-                <button class="chip sl" id="trDetect" hidden><span class="ms">auto_fix_high</span>Похоже на пивной — расшифровать?</button>
+                <span class="count" id="trCount"></span>
+                <button class="chip sl" id="trDetect" hidden><span class="ms">auto_fix_high</span>${lng('Похоже на пивной — расшифровать?', 'Looks like beer — decode it?')}</button>
               </footer>
             </div>
             <div class="tr-pane out">
@@ -73,18 +73,18 @@
               <div class="output" id="trOutput" aria-live="polite"></div>
               <footer>
                 <span class="count" id="trOutCount"></span>
-                <button class="icon-btn sl" id="trShare" title="Поделиться" hidden><span class="ms">share</span></button>
-                <button class="btn sl" id="trCopy"><span class="ms">content_copy</span>Копировать</button>
+                <button class="icon-btn sl" id="trShare" title="${lng('Поделиться', 'Share')}" hidden><span class="ms">share</span></button>
+                <button class="btn sl" id="trCopy"><span class="ms">content_copy</span>${lng('Копировать', 'Copy')}</button>
               </footer>
             </div>
           </div>
 
           <div class="tips">
-            <div class="tip"><span class="ms">bolt</span><div><b>Мгновенно</b><span>Перевод появляется прямо во время набора.</span></div></div>
-            <div class="tip"><span class="ms">language</span><div><b>RU + EN</b><span>Понимает кириллицу и латиницу, остальное оставляет как есть.</span></div></div>
-            <div class="tip"><span class="ms">sports_esports</span><div><b>Скучно?</b><span>Загляни во вкладку «Игры» — там сапёр, змейка и казино.</span></div></div>
+            <div class="tip"><span class="ms">bolt</span><div><b>${lng('Мгновенно', 'Instant')}</b><span>${lng('Перевод появляется прямо во время набора.', 'The translation appears as you type.')}</span></div></div>
+            <div class="tip"><span class="ms">language</span><div><b>RU + EN</b><span>${lng('Понимает кириллицу и латиницу, остальное оставляет как есть.', 'Understands Cyrillic and Latin, leaves everything else as is.')}</span></div></div>
+            <div class="tip"><span class="ms">sports_esports</span><div><b>${lng('Скучно?', 'Bored?')}</b><span>${lng('Загляни во вкладку «Игры» — там сапёр, змейка и казино.', 'Check the Games tab — minesweeper, snake and a casino.')}</span></div></div>
           </div>
-          <div class="footer">Beer Translate · сделано с любовью к крафту 🍻</div>
+          <div class="footer">Beer Translate · ${lng('сделано с любовью к крафту 🍻', 'made with love for craft beer 🍻')}</div>
         </div>`));
 
       // пузырьки в шапке
@@ -109,17 +109,18 @@
       function render() {
         Beer.$$('.segmented button', el).forEach((b) =>
           b.setAttribute('aria-pressed', String((b.dataset.mode === 'text') === toBeerMode)));
-        $('#trInLabel', el).textContent = toBeerMode ? 'Русский / English' : 'Пивной язык 🍺';
-        $('#trOutLabel', el).textContent = toBeerMode ? 'Пивной язык 🍺' : 'Русский / English';
-        input.placeholder = toBeerMode ? 'Введите текст…' : 'Вставьте пивной шифр…';
-        output.dataset.placeholder = 'Здесь появится перевод';
+        const beerLang = lng('Пивной язык 🍺', 'Beer language 🍺');
+        $('#trInLabel', el).textContent = toBeerMode ? 'Русский / English' : beerLang;
+        $('#trOutLabel', el).textContent = toBeerMode ? beerLang : 'Русский / English';
+        input.placeholder = toBeerMode ? lng('Введите текст…', 'Type some text…') : lng('Вставьте пивной шифр…', 'Paste a beer cipher…');
+        output.dataset.placeholder = lng('Здесь появится перевод', 'The translation will appear here');
         translate();
       }
 
       function translate() {
         const val = input.value;
         store.set('tr:input', val);
-        $('#trCount', el).textContent = val.length + ' ' + plural(val.length, ['символ', 'символа', 'символов']);
+        $('#trCount', el).textContent = val.length + ' ' + plural(val.length, lng(['символ', 'символа', 'символов'], ['character', 'characters']));
         if (toBeerMode) {
           output.textContent = toBeer(val);
           const probe = fromBeer(val.trim());
@@ -129,7 +130,7 @@
           detect.hidden = true;
         }
         const o = output.textContent.length;
-        $('#trOutCount', el).textContent = o ? o + ' ' + plural(o, ['символ', 'символа', 'символов']) : '';
+        $('#trOutCount', el).textContent = o ? o + ' ' + plural(o, lng(['символ', 'символа', 'символов'], ['character', 'characters'])) : '';
       }
 
       function setMode(textMode) {
@@ -151,16 +152,16 @@
         try {
           input.value = await navigator.clipboard.readText();
           translate();
-        } catch (e) { snack('Браузер не дал доступ к буферу обмена'); input.focus(); }
+        } catch (e) { snack(lng('Браузер не дал доступ к буферу обмена', 'The browser blocked clipboard access')); input.focus(); }
       };
       $('#trCopy', el).onclick = async () => {
         const t = output.textContent;
-        if (!t) return snack('Сначала введите текст');
-        try { await navigator.clipboard.writeText(t); snack('Скопировано 🍺'); }
+        if (!t) return snack(lng('Сначала введите текст', 'Type some text first'));
+        try { await navigator.clipboard.writeText(t); snack(lng('Скопировано 🍺', 'Copied 🍺')); }
         catch (e) {
           const ta = h('<textarea style="position:fixed;opacity:0"></textarea>');
           ta.value = t; document.body.appendChild(ta); ta.select();
-          try { document.execCommand('copy'); snack('Скопировано 🍺'); } catch (e2) { snack('Не удалось скопировать'); }
+          try { document.execCommand('copy'); snack(lng('Скопировано 🍺', 'Copied 🍺')); } catch (e2) { snack(lng('Не удалось скопировать', 'Could not copy')); }
           ta.remove();
         }
       };
@@ -173,7 +174,9 @@
     },
   });
 
+  // формы: по-русски [1, 2–4, 5+], по-английски [1, остальное]
   function plural(n, forms) {
+    if (forms.length === 2) return n === 1 ? forms[0] : forms[1];
     const a = n % 100, b = n % 10;
     if (a > 10 && a < 20) return forms[2];
     if (b === 1) return forms[0];

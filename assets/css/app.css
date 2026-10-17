@@ -459,6 +459,8 @@
 .sec-card span { font-size: 14px; color: var(--md-on-surface-variant); }
 .sec-card .ms.go { margin-left: auto; color: var(--md-on-surface-variant); }
 
+.lang-btn { font-size: 13px; font-weight: 700; letter-spacing: .5px; }
+
 .footer { text-align: center; padding: 24px 16px 8px; font-size: 12px; color: var(--md-on-surface-variant); }
 
 .confetti { position: fixed; top: -10px; width: 10px; height: 14px; z-index: 60; pointer-events: none; border-radius: 2px; animation: confetti linear forwards; }
