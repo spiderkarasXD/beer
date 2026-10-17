@@ -4,7 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Beer Translate</title>
-  <meta name="description" content="Переводчик с русского и английского на пивной язык + игры и казино.">
+  <meta name="description" content="Переводчик с русского и английского на пивной язык + игры и казино." data-en-content="Translator from Russian and English into the beer language + games and a casino.">
+  <script src="assets/js/lang.js?v=3"></script>
   <meta name="theme-color" content="#fff8f2" id="metaTheme">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍺</text></svg>">
   <script>
@@ -18,26 +19,28 @@
   <link rel="preload" href="assets/fonts/material-symbols-rounded.woff2?v=2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="assets/css/fonts.css?v=2">
   <link rel="stylesheet" href="assets/css/m3.css">
-  <link rel="stylesheet" href="assets/css/app.css">
+  <link rel="stylesheet" href="assets/css/app.css?v=3">
 </head>
 <body>
   <div class="app">
     <!-- Navigation rail (desktop) -->
-    <nav class="rail" aria-label="Навигация">
+    <nav class="rail" aria-label="Навигация" data-en-aria="Navigation">
       <a class="logo" href="#/translate" title="Beer Translate">🍺</a>
-      <a class="dest" href="#/translate" data-nav="translate"><span class="ind"><span class="ms">translate</span></span>Перевод</a>
-      <a class="dest" href="#/games" data-nav="games"><span class="ind"><span class="ms">sports_esports</span></span>Игры</a>
-      <a class="dest" href="#/sections" data-nav="sections"><span class="ind"><span class="ms">apps</span></span>Разделы</a>
+      <a class="dest" href="#/translate" data-nav="translate"><span class="ind"><span class="ms">translate</span></span><span data-en="Translate">Перевод</span></a>
+      <a class="dest" href="#/games" data-nav="games"><span class="ind"><span class="ms">sports_esports</span></span><span data-en="Games">Игры</span></a>
+      <a class="dest" href="#/sections" data-nav="sections"><span class="ind"><span class="ms">apps</span></span><span data-en="Sections">Разделы</span></a>
       <div class="spacer"></div>
-      <button class="icon-btn sl" data-action="theme" title="Тема"><span class="ms">dark_mode</span></button>
+      <button class="icon-btn sl lang-btn" data-action="lang" title="English" data-en-title="Русский" data-en="RU">EN</button>
+      <button class="icon-btn sl" data-action="theme" title="Тема" data-en-title="Theme"><span class="ms">dark_mode</span></button>
     </nav>
 
     <div class="main">
       <header class="topbar" id="topbar">
-        <button class="icon-btn sl back" id="backBtn" hidden title="Назад"><span class="ms">arrow_back</span></button>
+        <button class="icon-btn sl back" id="backBtn" hidden title="Назад" data-en-title="Back"><span class="ms">arrow_back</span></button>
         <div class="title" id="pageTitle">Beer Translate</div>
         <a class="balance-chip" id="balanceChip" href="#/casino" hidden style="text-decoration:none"><span class="ms fill">payments</span><span id="balanceText">$10.00</span></a>
-        <button class="icon-btn sl topbar-theme" data-action="theme" title="Тема"><span class="ms">dark_mode</span></button>
+        <button class="icon-btn sl topbar-theme lang-btn" data-action="lang" title="English" data-en-title="Русский" data-en="RU">EN</button>
+        <button class="icon-btn sl topbar-theme" data-action="theme" title="Тема" data-en-title="Theme"><span class="ms">dark_mode</span></button>
       </header>
 
       <div class="view-wrap">
@@ -46,19 +49,19 @@
     </div>
 
     <!-- Navigation bar (mobile) -->
-    <nav class="navbar" aria-label="Навигация">
-      <a class="dest" href="#/translate" data-nav="translate"><span class="ind"><span class="ms">translate</span></span>Перевод</a>
-      <a class="dest" href="#/games" data-nav="games"><span class="ind"><span class="ms">sports_esports</span></span>Игры</a>
-      <a class="dest" href="#/sections" data-nav="sections"><span class="ind"><span class="ms">apps</span></span>Разделы</a>
+    <nav class="navbar" aria-label="Навигация" data-en-aria="Navigation">
+      <a class="dest" href="#/translate" data-nav="translate"><span class="ind"><span class="ms">translate</span></span><span data-en="Translate">Перевод</span></a>
+      <a class="dest" href="#/games" data-nav="games"><span class="ind"><span class="ms">sports_esports</span></span><span data-en="Games">Игры</span></a>
+      <a class="dest" href="#/sections" data-nav="sections"><span class="ind"><span class="ms">apps</span></span><span data-en="Sections">Разделы</span></a>
     </nav>
   </div>
 
   <div class="snackbar" id="snackbar" role="status" aria-live="polite"><span id="snackText"></span></div>
 
-  <script src="assets/js/core.js" defer></script>
-  <script src="assets/js/translator.js" defer></script>
-  <script src="assets/js/games.js" defer></script>
-  <script src="assets/js/casino.js" defer></script>
-  <script src="assets/js/app.js" defer></script>
+  <script src="assets/js/core.js?v=3" defer></script>
+  <script src="assets/js/translator.js?v=3" defer></script>
+  <script src="assets/js/games.js?v=3" defer></script>
+  <script src="assets/js/casino.js?v=3" defer></script>
+  <script src="assets/js/app.js?v=3" defer></script>
 </body>
 </html>

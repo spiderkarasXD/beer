@@ -15,13 +15,13 @@
   };
   const randInt = (n) => Math.floor(rand() * n);
   const pick = (arr) => arr[randInt(arr.length)];
-  const rub = (v) => Math.round(v).toLocaleString('ru-RU') + ' ₽';
+  const rub = (v) => Math.round(v).toLocaleString(L10N.locale) + ' ₽';
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   let uidSeq = Date.now();
   const uid = () => (uidSeq++).toString(36);
   const pad = (n) => String(n).padStart(2, '0');
   const clock = (ms) => { const s = Math.max(0, Math.ceil(ms / 1000)); return `${pad(Math.floor(s / 3600))}:${pad(Math.floor(s / 60) % 60)}:${pad(s % 60)}`; };
-  const dhm = (ms) => { const m = Math.max(0, Math.floor(ms / 60000)); return `${Math.floor(m / 1440)}д:${pad(Math.floor(m / 60) % 24)}:${pad(m % 60)}м`; };
+  const dhm = (ms) => { const m = Math.max(0, Math.floor(ms / 60000)); return `${Math.floor(m / 1440)}${lng('д', 'd')}:${pad(Math.floor(m / 60) % 24)}:${pad(m % 60)}${lng('м', 'm')}`; };
 
   const store = {
     get(k, d) { try { const v = localStorage.getItem('cb2:' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -32,7 +32,7 @@
   const S = Object.assign({
     balance: 1000,
     inv: [],              // [{ u: uid, id: skinId }]
-    nick: 'Игрок' + (1000 + randInt(9000)),
+    nick: lng('Игрок', 'Player') + (1000 + randInt(9000)),
     freeAt: 0,
     bonusAt: 0,
     promos: [],
@@ -173,6 +173,8 @@
     c.hero = c.items.slice().sort((x, y) => SKIN[y].price - SKIN[x].price)[0];
   }
   CASES.forEach(calibrate);
+  const CASE_EN = { free: 'Free', beer: 'Beer Starter', pistol: 'Pistol', milspec: 'Mil-Spec', covert: 'Covert', knife: 'Knife', gloves: 'Gloves', high: 'High Roller', dlore: 'Dragon', 'r-bomzh': 'Hobo', 'r-army': 'Army Depot', 'r-pink': 'Pink', 'r-red': 'Red', 'r-gold': 'Only ★' };
+  if (L10N.en) CASES.forEach((c) => { if (CASE_EN[c.id]) c.name = CASE_EN[c.id]; });
   const CASE = Object.fromEntries(CASES.map((c) => [c.id, c]));
   const PAID = CASES.filter((c) => !c.free);
   const LIMITED = ['dlore', 'high', 'gloves', 'knife'];
@@ -246,7 +248,7 @@
     let online = 6100 + randInt(800);
     const upd = () => {
       online = Math.max(4000, online + randInt(41) - 20);
-      const t = online.toLocaleString('ru-RU');
+      const t = online.toLocaleString(L10N.locale);
       $('#onlineSide').textContent = t; $('#onlineHead').textContent = t;
     };
     upd(); setInterval(upd, 3500);
@@ -303,27 +305,29 @@
 
   // ---------- главная ----------
   const GROUPS = [
-    ['all', 'Все'], ['hits', 'Хиты'], ['cs2', 'Кейсы CS2'], ['weapons', 'Оружие'], ['knives', 'Ножи'], ['gloves', 'Перчатки'], ['rarity', 'По редкости'],
+    ['all', lng('Все', 'All')], ['hits', lng('Хиты', 'Hits')], ['cs2', lng('Кейсы CS2', 'CS2 cases')], ['weapons', lng('Оружие', 'Weapons')], ['knives', lng('Ножи', 'Knives')], ['gloves', lng('Перчатки', 'Gloves')], ['rarity', lng('По редкости', 'By rarity')],
   ];
-  const GROUP_TITLE = { free: 'Бесплатно', hits: 'Хиты CaseBeer', cs2: 'Оружейные кейсы CS2', weapons: 'Кейсы по оружию', knives: 'Ножевые кейсы', gloves: 'Перчатки', rarity: 'По редкости' };
+  const GROUP_TITLE = lng(
+    { free: 'Бесплатно', hits: 'Хиты CaseBeer', cs2: 'Оружейные кейсы CS2', weapons: 'Кейсы по оружию', knives: 'Ножевые кейсы', gloves: 'Перчатки', rarity: 'По редкости' },
+    { free: 'Free', hits: 'CaseBeer hits', cs2: 'CS2 weapon cases', weapons: 'Cases by weapon', knives: 'Knife cases', gloves: 'Gloves', rarity: 'By rarity' });
   function caseCard(c) {
     return `<a class="ccard ${c.price > S.balance ? 'locked' : ''}" href="#/case/${c.id}" style="--cc:${c.color}">
-      <div class="head"><div class="nm">${esc(c.name)}</div><div class="sub">${c.items.length} предметов ${NEWC.includes(c.id) ? '<span class="badge-new">NEW</span>' : ''}</div></div>
+      <div class="head"><div class="nm">${esc(c.name)}</div><div class="sub">${c.items.length} ${lng('предметов', 'items')} ${NEWC.includes(c.id) ? '<span class="badge-new">NEW</span>' : ''}</div></div>
       ${caseArt(c)}
-      <div class="price-box">${c.free ? 'Бесплатно' : rub(c.price)}</div>
+      <div class="price-box">${c.free ? lng('Бесплатно', 'Free') : rub(c.price)}</div>
     </a>`;
   }
   function pageHome(el) {
     let q = '', onlyAff = store.get('onlyAff', false), grp = store.get('grp', 'all');
     el.innerHTML = `
       <section class="promo">
-        <div class="voucher" id="vchr"><div class="vt">%</div><div class="vb"><b>+20%</b><span>к балансу</span></div></div>
-        <div class="countdown-box"><div class="cl">До бесплатного<br>кейса:</div><div class="ct" id="freeT">00:00:00</div></div>
-        <div class="promo-code"><div class="pl">Используй <b>промокод:</b></div><button id="promoBtn">BEER-20</button></div>
+        <div class="voucher" id="vchr"><div class="vt">%</div><div class="vb"><b>+20%</b><span>${lng('к балансу', 'to balance')}</span></div></div>
+        <div class="countdown-box"><div class="cl">${lng('До бесплатного<br>кейса:', 'Free case<br>in:')}</div><div class="ct" id="freeT">00:00:00</div></div>
+        <div class="promo-code"><div class="pl">${lng('Используй <b>промокод:</b>', 'Use the <b>promo code:</b>')}</div><button id="promoBtn">BEER-20</button></div>
       </section>
       <div class="filter-bar">
-        <label class="row" style="gap:10px">Быстрый фильтр: <input class="search" id="q" placeholder="Что ищем?"></label>
-        <span class="toggle ${onlyAff ? 'on' : ''}" id="aff"><i></i>Только по карману</span>
+        <label class="row" style="gap:10px">${lng('Быстрый фильтр:', 'Quick filter:')} <input class="search" id="q" placeholder="${lng('Что ищем?', 'Looking for?')}"></label>
+        <span class="toggle ${onlyAff ? 'on' : ''}" id="aff"><i></i>${lng('Только по карману', 'Only affordable')}</span>
       </div>
       <div class="grp-tabs" id="grpTabs">${GROUPS.map(([k, n]) => `<button class="chip" data-g="${k}">${n}</button>`).join('')}</div>
       <div id="limWrap"><div class="title-glow"><span></span>Limited</div><div class="lim-grid" id="limGrid"></div></div>
@@ -339,7 +343,7 @@
           <a class="lcard" href="#/case/${c.id}" style="--cc:${c.color}">
             <div class="top"><span class="tag">LIMITED</span><span class="tm" data-end="${limitedEnd(i)}">⏱ ${dhm(limitedEnd(i) - Date.now())}</span>${caseArt(c)}</div>
             <div class="bot"><b>${esc(c.name)}</b><span>${rub(c.price)}</span></div>
-          </a>`).join('') || '<div class="muted">Ничего не найдено</div>';
+          </a>`).join('') || `<div class="muted">${lng('Ничего не найдено', 'Nothing found')}</div>`;
       }
       const order = ['free', 'hits', 'cs2', 'weapons', 'knives', 'gloves', 'rarity'];
       const groups = grp === 'all' ? order : grp === 'hits' ? ['free', 'hits'] : [grp];
@@ -348,7 +352,7 @@
         if (!list.length) return '';
         return `<div class="title-glow"><span></span>${GROUP_TITLE[g]} <small class="muted">· ${list.length}</small></div><div class="case-grid">${list.map(caseCard).join('')}</div>`;
       }).join('');
-      $('#sections', el).innerHTML = html || '<div class="muted" style="text-align:center;padding:40px">Ничего не найдено</div>';
+      $('#sections', el).innerHTML = html || `<div class="muted" style="text-align:center;padding:40px">${lng('Ничего не найдено', 'Nothing found')}</div>`;
     }
     $('#q', el).addEventListener('input', (e) => { q = e.target.value.trim().toLowerCase(); renderCases(); });
     $('#aff', el).onclick = (e) => { onlyAff = !onlyAff; store.set('onlyAff', onlyAff); e.currentTarget.classList.toggle('on', onlyAff); renderCases(); };
@@ -375,15 +379,15 @@
       <div class="case-hero" style="--cc:${c.color}">
         ${caseArt(c)}
         <div class="nm">${esc(c.name)}</div>
-        <div class="sub">${c.free ? 'Бесплатно раз в час' : c.items.length + ' предметов · средний дроп ≈ ' + rub(c.ev)}</div>
+        <div class="sub">${c.free ? lng('Бесплатно раз в час', 'Free once an hour') : c.items.length + lng(' предметов · средний дроп ≈ ', ' items · average drop ≈ ') + rub(c.ev)}</div>
         <div class="row" style="justify-content:center">
           ${c.free ? '' : `<div class="seg" id="cnt">${[1, 2, 3, 4, 5].map((n) => `<button data-n="${n}">x${n}</button>`).join('')}</div>`}
-          <button class="icon-btn" id="fastBtn" title="Быстрое открытие">${icon('bolt')}</button>
+          <button class="icon-btn" id="fastBtn" title="${lng('Быстрое открытие', 'Fast opening')}">${icon('bolt')}</button>
         </div>
       </div>
       <div class="reels" id="reels"></div>
       <div class="open-bar"><button class="btn xl" id="openBtn"></button></div>
-      <div class="title-glow"><span></span>Содержимое кейса</div>
+      <div class="title-glow"><span></span>${lng('Содержимое кейса', 'Case contents')}</div>
       <div class="item-grid small">${c.chances.slice().sort((a, b) => SKIN[b.id].price - SKIN[a.id].price).map((ch) => itemHtml(ch.id, '', '', ch.p, true)).join('')}</div>`;
 
     const reels = $('#reels', el);
@@ -404,10 +408,10 @@
       if (c.free) {
         const left = S.freeAt - Date.now();
         btn.disabled = busy || left > 0;
-        btn.textContent = left > 0 ? 'Через ' + clock(left) : 'Открыть бесплатно';
+        btn.textContent = left > 0 ? lng('Через ', 'In ') + clock(left) : lng('Открыть бесплатно', 'Open for free');
       } else {
         btn.disabled = busy;
-        btn.textContent = `Открыть за ${rub(c.price * count)}`;
+        btn.textContent = `${lng('Открыть за', 'Open for')} ${rub(c.price * count)}`;
       }
     }
     $$('#cnt button', el).forEach((b) => (b.onclick = () => { if (busy) return; count = +b.dataset.n; store.set('count', count); layout(); }));
@@ -417,7 +421,7 @@
       if (busy) return;
       const cost = c.price * count;
       if (c.free) { if (S.freeAt > Date.now()) return; S.freeAt = Date.now() + 3600e3; }
-      else if (S.balance < cost) { toast('Недостаточно средств — пополни баланс', 'bad'); openTopUp(); return; }
+      else if (S.balance < cost) { toast(lng('Недостаточно средств — пополни баланс', 'Not enough funds — top up your balance'), 'bad'); openTopUp(); return; }
       busy = true; updBtn();
       setBalance(S.balance - cost);
       S.st.opened += count; S.st.spent += cost;
@@ -433,12 +437,12 @@
 
   function showWin(items) {
     const total = items.reduce((s, it) => s + SKIN[it.id].price, 0);
-    modal(`<h3>${items.length > 1 ? 'Твой дроп' : 'Тебе выпало!'}</h3>
+    modal(`<h3>${items.length > 1 ? lng('Твой дроп', 'Your drop') : lng('Тебе выпало!', 'You got!')}</h3>
       <div class="item-grid">${items.map((it) => itemHtml(it.id)).join('')}</div>
       <div class="actions">
-        <button class="btn green" data-a="sell">Продать за ${rub(total)}</button>
-        <button class="btn" data-a="upg">В апгрейд</button>
-        <button class="btn ghost" data-a="keep">Забрать</button>
+        <button class="btn green" data-a="sell">${lng('Продать за', 'Sell for')} ${rub(total)}</button>
+        <button class="btn" data-a="upg">${lng('В апгрейд', 'To upgrade')}</button>
+        <button class="btn ghost" data-a="keep">${lng('Забрать', 'Keep')}</button>
       </div>`, (bg, close) => {
       bg.addEventListener('click', (e) => {
         const a = e.target.closest('[data-a]'); if (!a) return;
@@ -455,7 +459,7 @@
     const sum = items.reduce((s, it) => s + SKIN[it.id].price, 0);
     removeItems(uids);
     setBalance(S.balance + sum);
-    if (items.length) toast(`Продано ${items.length} шт. за ${rub(sum)}`, 'good');
+    if (items.length) toast(lng(`Продано ${items.length} шт. за ${rub(sum)}`, `Sold ${items.length} for ${rub(sum)}`), 'good');
     return sum;
   }
 
@@ -473,11 +477,11 @@
       return `<line x1="${165 + r1 * Math.sin(a)}" y1="${165 - r1 * Math.cos(a)}" x2="${165 + r2 * Math.sin(a)}" y2="${165 - r2 * Math.cos(a)}" stroke="${big ? '#5b6280' : '#3a4058'}" stroke-width="${big ? 2.4 : 1.4}"/>`;
     }).join('');
     el.innerHTML = `
-      <div class="h1">${icon('upgrade')}Апгрейд</div>
-      <div class="upg-tools"><button class="icon-btn" id="fastBtn" title="Быстро">${icon('bolt')}</button><span class="spacer"></span>
-        <div class="cashback" id="cbBox"><span class="cb-ico">↺</span><span>Кешбек <b>${Math.round(CASHBACK * 100)}%</b> с неудачных апгрейдов</span><b class="cb-sum" id="cbSum"></b><button class="btn green sm" id="cbClaim">Забрать</button></div></div>
+      <div class="h1">${icon('upgrade')}${lng('Апгрейд', 'Upgrade')}</div>
+      <div class="upg-tools"><button class="icon-btn" id="fastBtn" title="${lng('Быстро', 'Fast')}">${icon('bolt')}</button><span class="spacer"></span>
+        <div class="cashback" id="cbBox"><span class="cb-ico">↺</span><span>${lng('Кешбек', 'Cashback')} <b>${Math.round(CASHBACK * 100)}%</b> ${lng('с неудачных апгрейдов', 'on failed upgrades')}</span><b class="cb-sum" id="cbSum"></b><button class="btn green sm" id="cbClaim">${lng('Забрать', 'Claim')}</button></div></div>
       <div class="upg-top">
-        <div class="upg-box"><div class="bh">Выберите предметы и/или баланс для использования<small>Можно выбрать несколько предметов</small></div><div class="bb" id="srcBox"></div></div>
+        <div class="upg-box"><div class="bh">${lng('Выберите предметы и/или баланс для использования<small>Можно выбрать несколько предметов</small>', 'Pick items and/or balance to use<small>You can pick several items</small>')}</div><div class="bb" id="srcBox"></div></div>
         <div class="gauge" id="gauge">
           <svg class="dial" viewBox="0 0 330 330">
             ${ticks}
@@ -487,19 +491,19 @@
             <circle cx="165" cy="165" r="96" fill="none" stroke="#1d2131" stroke-width="10"/>
           </svg>
           <svg class="needle" id="needle" viewBox="0 0 330 330"><path d="M165 270 175 300H155Z" fill="#ffc700" stroke="#141725" stroke-width="2"/><path d="M165 296V318" stroke="#ff7a00" stroke-width="3"/></svg>
-          <div class="core"><svg viewBox="0 0 70 100"><path d="M35 0 70 26V48L35 22 0 48V26Z" fill="currentColor"/><path d="M35 36 70 62V84L35 58 0 84V62Z" fill="currentColor" opacity=".55"/></svg><b id="chance">0.00%</b><span>шанс</span></div>
+          <div class="core"><svg viewBox="0 0 70 100"><path d="M35 0 70 26V48L35 22 0 48V26Z" fill="currentColor"/><path d="M35 36 70 62V84L35 58 0 84V62Z" fill="currentColor" opacity=".55"/></svg><b id="chance">0.00%</b><span>${lng('шанс', 'chance')}</span></div>
         </div>
-        <div class="upg-box"><div class="bh">Выберите предмет для апгрейда<small>Из списка ниже или кнопками множителей</small></div><div class="bb" id="tgtBox"></div></div>
+        <div class="upg-box"><div class="bh">${lng('Выберите предмет для апгрейда<small>Из списка ниже или кнопками множителей</small>', 'Pick an item to upgrade to<small>From the list below or with the multiplier buttons</small>')}</div><div class="bb" id="tgtBox"></div></div>
       </div>
       <div class="upg-under">
-        <div class="bal-slider"><span class="lb">Добавить баланс</span><div class="mid"><b id="addBalT">0 ₽</b><input type="range" id="addBal" min="0" max="${S.balance}" step="1" value="0"></div><div class="mx">Макс.<b>${rub(S.balance)}</b></div></div>
-        <button class="btn xl block" id="upgBtn">${icon('upgrade')} Апгрейд</button>
+        <div class="bal-slider"><span class="lb">${lng('Добавить баланс', 'Add balance')}</span><div class="mid"><b id="addBalT">0 ₽</b><input type="range" id="addBal" min="0" max="${S.balance}" step="1" value="0"></div><div class="mx">${lng('Макс.', 'Max')}<b>${rub(S.balance)}</b></div></div>
+        <button class="btn xl block" id="upgBtn">${icon('upgrade')} ${lng('Апгрейд', 'Upgrade')}</button>
         <div class="mults" id="mults">${['x1.5', 'x2', 'x5', 'x10', '30%', '50%', '75%', '90%'].map((m) => `<button class="chip" data-m="${m}">${m}</button>`).join('')}</div>
       </div>
       <div class="upg-bottom">
-        <div class="ibox"><div class="ih"><span class="t">${icon('box')}Мои предметы</span><span class="spacer"></span><button class="icon-btn" id="invSort" title="Сортировка">${icon('sort')}</button></div><div class="ib"><div class="item-grid small" id="invGrid"></div></div></div>
-        <div class="ibox"><div class="ih"><span class="t">${icon('upgrade')}Выбрать предмет</span><span class="spacer"></span>
-          <input class="search" id="pFrom" type="number" placeholder="От ₽"><input class="search" id="pTo" type="number" placeholder="До ₽"><input class="search wide" id="q" placeholder="Поиск"></div>
+        <div class="ibox"><div class="ih"><span class="t">${icon('box')}${lng('Мои предметы', 'My items')}</span><span class="spacer"></span><button class="icon-btn" id="invSort" title="${lng('Сортировка', 'Sort')}">${icon('sort')}</button></div><div class="ib"><div class="item-grid small" id="invGrid"></div></div></div>
+        <div class="ibox"><div class="ih"><span class="t">${icon('upgrade')}${lng('Выбрать предмет', 'Pick an item')}</span><span class="spacer"></span>
+          <input class="search" id="pFrom" type="number" placeholder="${lng('От ₽', 'From ₽')}"><input class="search" id="pTo" type="number" placeholder="${lng('До ₽', 'To ₽')}"><input class="search wide" id="q" placeholder="${lng('Поиск', 'Search')}"></div>
           <div class="ib"><div class="item-grid small" id="tgtGrid"></div></div></div>
       </div>`;
 
@@ -527,18 +531,18 @@
       inv.sort((a, b) => (invDesc ? -1 : 1) * (SKIN[a.id].price - SKIN[b.id].price));
       $('#invGrid', el).innerHTML = inv.length
         ? inv.map((it) => itemHtml(it.id, 'click' + (sel.has(it.u) ? ' sel' : ''), `data-u="${it.u}"`)).join('')
-        : `<div class="empty-inv" style="grid-column:1/-1"><b>Ваш инвентарь пуст</b><span>Открой свой первый кейс</span><a class="btn green" href="#/">${icon('box')} Открыть кейс</a></div>`;
+        : `<div class="empty-inv" style="grid-column:1/-1"><b>${lng('Ваш инвентарь пуст', 'Your inventory is empty')}</b><span>${lng('Открой свой первый кейс', 'Open your first case')}</span><a class="btn green" href="#/">${icon('box')} ${lng('Открыть кейс', 'Open a case')}</a></div>`;
       const chosen = S.inv.filter((x) => sel.has(x.u));
       const ghost = '<svg class="ghost-gun" viewBox="0 0 120 48"><use width="120" height="48" href="#w-rifle" fill="currentColor"/></svg>';
       $('#srcBox', el).innerHTML = chosen.length
         ? (chosen.length === 1 ? itemHtml(chosen[0].id) : `<div class="stack">${chosen.map((x) => itemHtml(x.id)).join('')}</div>`)
-        : (addBal ? `${ghost}<div class="bal-only">${rub(addBal)}<small>с баланса</small></div>` : `${ghost}${CHEV_DOWN}`);
+        : (addBal ? `${ghost}<div class="bal-only">${rub(addBal)}<small>${lng('с баланса', 'from balance')}</small></div>` : `${ghost}${CHEV_DOWN}`);
       const st = stake();
       if (target && SKIN[target].price <= st) target = null;
       $('#tgtBox', el).innerHTML = target ? itemHtml(target) : `${ghost}${CHEV_UP}`;
       const list = SKINS.filter((s) => s.price > st && (!from || s.price >= from) && (!to || s.price <= to) && (!q || (s.weapon + ' ' + s.skin).toLowerCase().includes(q))).sort((a, b) => a.price - b.price);
-      $('#tgtGrid', el).innerHTML = (list.slice(0, limit).map((s) => itemHtml(s.id, 'click' + (s.id === target ? ' sel' : ''), `data-t="${s.id}"`, null, true)).join('') || '<div class="muted">Ничего не найдено</div>')
-        + (list.length > limit ? `<button class="btn ghost block" id="more" style="grid-column:1/-1">Показать ещё (${list.length - limit})</button>` : '');
+      $('#tgtGrid', el).innerHTML = (list.slice(0, limit).map((s) => itemHtml(s.id, 'click' + (s.id === target ? ' sel' : ''), `data-t="${s.id}"`, null, true)).join('') || `<div class="muted">${lng('Ничего не найдено', 'Nothing found')}</div>`)
+        + (list.length > limit ? `<button class="btn ghost block" id="more" style="grid-column:1/-1">${lng('Показать ещё', 'Show more')} (${list.length - limit})</button>` : '');
       $('#cbSum', el).textContent = rub(S.cashback);
       $('#cbClaim', el).disabled = S.cashback < 1;
       const ch = chance();
@@ -551,17 +555,17 @@
     $('#invGrid', el).addEventListener('click', (e) => {
       const it = e.target.closest('[data-u]'); if (!it || busy) return;
       const u = it.dataset.u;
-      if (sel.has(u)) sel.delete(u); else { if (sel.size >= 6) return toast('Максимум 6 предметов'); sel.add(u); }
+      if (sel.has(u)) sel.delete(u); else { if (sel.size >= 6) return toast(lng('Максимум 6 предметов', 'Up to 6 items')); sel.add(u); }
       render();
     });
     $('#tgtGrid', el).addEventListener('click', (e) => {
       if (e.target.closest('#more')) { limit += 120; render(); return; }
       const it = e.target.closest('[data-t]'); if (!it || busy) return; target = it.dataset.t; render();
     });
-    $('#cbClaim', el).onclick = () => { if (S.cashback < 1) return; const v = Math.floor(S.cashback); S.cashback -= v; setBalance(S.balance + v); toast(`Кешбек ${rub(v)} зачислен на баланс`, 'good'); render(); };
+    $('#cbClaim', el).onclick = () => { if (S.cashback < 1) return; const v = Math.floor(S.cashback); S.cashback -= v; setBalance(S.balance + v); toast(lng(`Кешбек ${rub(v)} зачислен на баланс`, `Cashback of ${rub(v)} added to your balance`), 'good'); render(); };
     $('#mults', el).addEventListener('click', (e) => {
       const b = e.target.closest('[data-m]'); if (!b || busy) return;
-      const st = stake(); if (!st) return toast('Сначала выбери предметы или добавь баланс');
+      const st = stake(); if (!st) return toast(lng('Сначала выбери предметы или добавь баланс', 'Pick items or add balance first'));
       const m = b.dataset.m;
       const want = m.endsWith('%') ? (st * HOUSE) / (parseFloat(m) / 100) : st * parseFloat(m.slice(1));
       const cand = SKINS.filter((s) => s.price > st).sort((a, c) => Math.abs(a.price - want) - Math.abs(c.price - want))[0];
@@ -577,7 +581,7 @@
       if (busy || !target) return;
       const st = stake();
       if (!st) return;
-      if (addBal > S.balance) return toast('Недостаточно средств', 'bad');
+      if (addBal > S.balance) return toast(lng('Недостаточно средств', 'Not enough funds'), 'bad');
       const ch = chance();
       const win = rand() < ch;
       busy = true;
@@ -604,8 +608,8 @@
       sel.clear(); addBal = 0; $('#addBal', el).value = 0; $('#addBal', el).max = S.balance;
       el.querySelector('.bal-slider .mx b').textContent = rub(S.balance);
       busy = false;
-      if (win) { toast(`Апгрейд успешен: ${SKIN[target].weapon} | ${SKIN[target].skin}`, 'good'); myDrop(target, 'high'); sel.add(wonItem.u); }
-      else toast(`Не повезло. Кешбек +${rub(back)} — забери его кнопкой сверху`, 'bad');
+      if (win) { toast(`${lng('Апгрейд успешен', 'Upgrade succeeded')}: ${SKIN[target].weapon} | ${SKIN[target].skin}`, 'good'); myDrop(target, 'high'); sel.add(wonItem.u); }
+      else toast(lng(`Не повезло. Кешбек +${rub(back)} — забери его кнопкой сверху`, `No luck. Cashback +${rub(back)} — claim it with the button above`), 'bad');
       target = null;
       render();
     };
@@ -635,31 +639,31 @@
     const pickCnt = store.get('bpick', {});
     let size = store.get('bsize', 2), mode = store.get('bmode', 'normal');
     el.innerHTML = `
-      <div class="h1">${icon('battles')}Кейс-батлы</div>
+      <div class="h1">${icon('battles')}${lng('Кейс-батлы', 'Case battles')}</div>
       <div class="panel" style="margin-bottom:18px">
         <div class="row" style="margin-bottom:14px">
-          <b class="cond" style="font-size:20px">Создать батл</b><span class="spacer"></span>
-          <div class="seg" id="bSize">${[2, 3, 4].map((n) => `<button data-n="${n}">${n} игрока</button>`).join('')}</div>
-          <div class="seg" id="bMode"><button data-m="normal">Обычный</button><button data-m="crazy">Crazy</button></div>
+          <b class="cond" style="font-size:20px">${lng('Создать батл', 'Create a battle')}</b><span class="spacer"></span>
+          <div class="seg" id="bSize">${[2, 3, 4].map((n) => `<button data-n="${n}">${n} ${lng('игрока', 'players')}</button>`).join('')}</div>
+          <div class="seg" id="bMode"><button data-m="normal">${lng('Обычный', 'Normal')}</button><button data-m="crazy">Crazy</button></div>
         </div>
-        <input class="search" id="bq" placeholder="Поиск кейса" style="margin-bottom:10px;width:240px">
+        <input class="search" id="bq" placeholder="${lng('Поиск кейса', 'Search cases')}" style="margin-bottom:10px;width:240px">
         <div class="picker" id="bPicker">${PAID.map((c) => `<div class="pick-case" data-c="${c.id}">${caseArt(c)}<div class="nm">${esc(c.name)}</div><div class="pr">${rub(c.price)}</div><div class="cnt"><button data-d="-1">−</button><b>0</b><button data-d="1">+</button></div></div>`).join('')}</div>
-        <div class="row" style="margin-top:14px"><span class="muted" id="bInfo"></span><span class="spacer"></span><button class="btn lg" id="bCreate">Создать</button></div>
-        <div class="muted" style="font-size:13px;margin-top:8px">Все игроки открывают одни и те же кейсы. Победитель забирает все предметы. В режиме Crazy побеждает тот, у кого сумма меньше.</div>
+        <div class="row" style="margin-top:14px"><span class="muted" id="bInfo"></span><span class="spacer"></span><button class="btn lg" id="bCreate">${lng('Создать', 'Create')}</button></div>
+        <div class="muted" style="font-size:13px;margin-top:8px">${lng('Все игроки открывают одни и те же кейсы. Победитель забирает все предметы. В режиме Crazy побеждает тот, у кого сумма меньше.', 'All players open the same cases. The winner takes all the items. In Crazy mode the lowest total wins.')}</div>
       </div>
-      <div class="title-glow"><span></span>Активные батлы</div>
+      <div class="title-glow"><span></span>${lng('Активные батлы', 'Active battles')}</div>
       <div class="battle-list">${lobbyCache.map((b, i) => `
         <div class="bl-row ${b.mode}">
-          <div><b>${esc(b.host)}</b><div class="muted" style="font-size:12px">${b.cases.length} раунд(а) · ${b.mode === 'crazy' ? 'Crazy' : 'Обычный'}</div></div>
+          <div><b>${esc(b.host)}</b><div class="muted" style="font-size:12px">${b.cases.length} ${lng('раунд(а)', 'round(s)')} · ${b.mode === 'crazy' ? 'Crazy' : lng('Обычный', 'Normal')}</div></div>
           <div class="bl-cases">${b.cases.map((id) => caseArt(CASE[id])).join('')}</div>
           <div class="slots">${Array.from({ length: b.size }, (_, k) => `<span class="slot-ava ${k < b.joined ? 'full' : ''}">${k < b.joined ? '👤' : '+'}</span>`).join('')}</div>
-          <button class="btn" data-join="${i}">Войти · ${rub(b.cases.reduce((s, id) => s + CASE[id].price, 0))}</button>
+          <button class="btn" data-join="${i}">${lng('Войти', 'Join')} · ${rub(b.cases.reduce((s, id) => s + CASE[id].price, 0))}</button>
         </div>`).join('')}</div>`;
 
     function info() {
       const cases = Object.entries(pickCnt).flatMap(([id, n]) => Array(n).fill(id));
       const price = cases.reduce((s, id) => s + CASE[id].price, 0);
-      $('#bInfo', el).textContent = cases.length ? `${cases.length} раунд(ов) · стоимость входа ${rub(price)}` : 'Выбери кейсы (до 10 раундов)';
+      $('#bInfo', el).textContent = cases.length ? lng(`${cases.length} раунд(ов) · стоимость входа ${rub(price)}`, `${cases.length} round(s) · entry cost ${rub(price)}`) : lng('Выбери кейсы (до 10 раундов)', 'Pick cases (up to 10 rounds)');
       $('#bCreate', el).disabled = !cases.length;
       $$('.pick-case', el).forEach((p) => { const n = pickCnt[p.dataset.c] || 0; $('b', p).textContent = n; p.classList.toggle('on', n > 0); });
       $$('#bSize button', el).forEach((b) => b.classList.toggle('on', +b.dataset.n === size));
@@ -675,7 +679,7 @@
       const id = b.closest('.pick-case').dataset.c;
       const total = Object.values(pickCnt).reduce((a, x) => a + x, 0);
       const d = +b.dataset.d;
-      if (d > 0 && total >= 10) return toast('Максимум 10 раундов');
+      if (d > 0 && total >= 10) return toast(lng('Максимум 10 раундов', 'Up to 10 rounds'));
       pickCnt[id] = Math.max(0, (pickCnt[id] || 0) + d);
       if (!pickCnt[id]) delete pickCnt[id];
       store.set('bpick', pickCnt); info();
@@ -684,7 +688,7 @@
     $$('#bMode button', el).forEach((b) => (b.onclick = () => { mode = b.dataset.m; store.set('bmode', mode); info(); }));
     $('#bCreate', el).onclick = () => {
       const { cases, price } = info();
-      if (S.balance < price) { toast('Недостаточно средств', 'bad'); openTopUp(); return; }
+      if (S.balance < price) { toast(lng('Недостаточно средств', 'Not enough funds'), 'bad'); openTopUp(); return; }
       battle = makeBattle(cases, size, mode, 0);
       location.hash = '#/battle';
     };
@@ -692,7 +696,7 @@
       const b = e.target.closest('[data-join]'); if (!b) return;
       const L = lobbyCache[+b.dataset.join];
       const price = L.cases.reduce((s, id) => s + CASE[id].price, 0);
-      if (S.balance < price) { toast('Недостаточно средств', 'bad'); openTopUp(); return; }
+      if (S.balance < price) { toast(lng('Недостаточно средств', 'Not enough funds'), 'bad'); openTopUp(); return; }
       battle = makeBattle(L.cases, L.size, L.mode, L.joined);
       battle.players[1].name = L.host;
       lobbyCache.splice(+b.dataset.join, 1);
@@ -724,30 +728,30 @@
 
     el.innerHTML = `
       <div class="arena-head">
-        <a class="btn ghost sm" href="#/battles">← Батлы</a>
-        <div class="h1">${icon('battles')}Батл · ${B.mode === 'crazy' ? 'Crazy' : 'Обычный'}</div>
+        <a class="btn ghost sm" href="#/battles">← ${lng('Батлы', 'Battles')}</a>
+        <div class="h1">${icon('battles')}${lng('Батл', 'Battle')} · ${B.mode === 'crazy' ? 'Crazy' : lng('Обычный', 'Normal')}</div>
         <span class="spacer"></span>
-        <span class="chip">Банк: <b id="bank" style="color:var(--yellow)">0 ₽</b></span>
-        <button class="icon-btn" id="fastBtn" title="Быстро">${icon('bolt')}</button>
+        <span class="chip">${lng('Банк', 'Pot')}: <b id="bank" style="color:var(--yellow)">0 ₽</b></span>
+        <button class="icon-btn" id="fastBtn" title="${lng('Быстро', 'Fast')}">${icon('bolt')}</button>
       </div>
       <div class="round-cases" id="rounds">${B.cases.map((id, i) => `<div class="rc" data-i="${i}">${caseArt(CASE[id])}<div>${rub(CASE[id].price)}</div></div>`).join('')}</div>
       <div class="players" style="grid-template-columns:repeat(${B.size},minmax(0,1fr))">
         ${B.players.map((p, i) => `
           <div class="pcol" data-p="${i}">
             <div class="phead"><span class="slot-ava ${p.me ? 'me' : 'full'}">${esc(p.name[0].toUpperCase())}</span><span class="nm">${esc(p.name)}</span><span class="tot">0 ₽</span></div>
-            <div class="vreel"><div class="waiting">${p.late ? 'Ожидание игрока…' : 'Готов'}</div></div>
+            <div class="vreel"><div class="waiting">${p.late ? lng('Ожидание игрока…', 'Waiting for a player…') : lng('Готов', 'Ready')}</div></div>
             <div class="pdrops"></div>
           </div>`).join('')}
       </div>
       <div id="bEnd" style="display:flex;gap:10px;justify-content:center;margin-top:18px" hidden>
-        <button class="btn lg" id="again">Ещё такой же</button><a class="btn lg ghost" href="#/battles">К батлам</a>
+        <button class="btn lg" id="again">${lng('Ещё такой же', 'Same again')}</button><a class="btn lg ghost" href="#/battles">${lng('К батлам', 'To battles')}</a>
       </div>`;
     const fastBtn = $('#fastBtn', el);
     const setFast = () => fastBtn.classList.toggle('on', S.fast);
     fastBtn.onclick = () => { S.fast = !S.fast; save(); setFast(); };
     setFast();
     $('#again', el).onclick = () => {
-      if (S.balance < B.price) { toast('Недостаточно средств', 'bad'); return; }
+      if (S.balance < B.price) { toast(lng('Недостаточно средств', 'Not enough funds'), 'bad'); return; }
       battle = makeBattle(B.cases, B.size, B.mode, 0);
       route();
     };
@@ -759,7 +763,7 @@
       for (let i = 0; i < B.players.length; i++) {
         if (!B.players[i].late) continue;
         await sleep(500 + rand() * 600); if (!alive) return;
-        $('.waiting', cols[i]).textContent = 'Готов';
+        $('.waiting', cols[i]).textContent = lng('Готов', 'Ready');
       }
       for (const n of [3, 2, 1]) {
         cols.forEach((c) => { $('.waiting', c).innerHTML = `<span class="count">${n}</span>`; });
@@ -785,11 +789,11 @@
       settle();
       cols.forEach((col, i) => {
         col.classList.add(B.players[i] === winner ? 'winner' : 'loser');
-        $('.vreel', col).innerHTML = `<div class="waiting">${B.players[i] === winner ? '🏆 Победа<br>' + rub(bank) : 'Проигрыш'}</div>`;
+        $('.vreel', col).innerHTML = `<div class="waiting">${B.players[i] === winner ? lng('🏆 Победа<br>', '🏆 Win<br>') + rub(bank) : lng('Проигрыш', 'Loss')}</div>`;
       });
       $('#bEnd', el).hidden = false;
-      if (winner.me) { toast(`Ты выиграл батл! +${allDrops.length} предметов на ${rub(bank)}`, 'good'); allDrops.slice(0, 3).forEach((id) => myDrop(id, B.cases[0])); }
-      else toast(`Победил ${winner.name}`, 'bad');
+      if (winner.me) { toast(lng(`Ты выиграл батл! +${allDrops.length} предметов на ${rub(bank)}`, `You won the battle! +${allDrops.length} items worth ${rub(bank)}`), 'good'); allDrops.slice(0, 3).forEach((id) => myDrop(id, B.cases[0])); }
+      else toast(`${lng('Победил', 'Winner:')} ${winner.name}`, 'bad');
     })();
   }
 
@@ -798,19 +802,19 @@
     const slots = [];
     let busy = false;
     el.innerHTML = `
-      <div class="h1">${icon('contracts')}Контракты</div>
+      <div class="h1">${icon('contracts')}${lng('Контракты', 'Contracts')}</div>
       <div class="panel">
-        <div class="muted" style="margin-bottom:12px;text-align:center">Положи от 3 до 10 предметов — получишь один скин стоимостью от ×0.25 до ×4 от суммы контракта.</div>
+        <div class="muted" style="margin-bottom:12px;text-align:center">${lng('Положи от 3 до 10 предметов — получишь один скин стоимостью от ×0.25 до ×4 от суммы контракта.', 'Put in 3 to 10 items and get one skin worth ×0.25 to ×4 of the contract total.')}</div>
         <div class="con-slots" id="cSlots"></div>
         <div class="con-info">
-          <div class="panel"><b id="cSum">0 ₽</b><span>Сумма контракта</span></div>
-          <div class="panel"><b id="cMin">0 ₽</b><span>Минимум</span></div>
-          <div class="panel"><b id="cMax">0 ₽</b><span>Максимум</span></div>
+          <div class="panel"><b id="cSum">0 ₽</b><span>${lng('Сумма контракта', 'Contract total')}</span></div>
+          <div class="panel"><b id="cMin">0 ₽</b><span>${lng('Минимум', 'Minimum')}</span></div>
+          <div class="panel"><b id="cMax">0 ₽</b><span>${lng('Максимум', 'Maximum')}</span></div>
         </div>
         <div class="reels" id="cReel" hidden><div class="reel"></div></div>
-        <button class="btn xl block" id="cGo">Подписать контракт</button>
+        <button class="btn xl block" id="cGo">${lng('Подписать контракт', 'Sign the contract')}</button>
       </div>
-      <div class="title-glow"><span></span>Инвентарь</div>
+      <div class="title-glow"><span></span>${lng('Инвентарь', 'Inventory')}</div>
       <div class="item-grid small" id="cInv"></div>`;
 
     const sum = () => slots.reduce((s, u) => s + SKIN[S.inv.find((x) => x.u === u).id].price, 0);
@@ -828,12 +832,12 @@
       $('#cGo', el).disabled = busy || slots.length < 3;
       const free = S.inv.filter((x) => !slots.includes(x.u));
       $('#cInv', el).innerHTML = free.map((it) => itemHtml(it.id, 'click', `data-add="${it.u}"`)).join('')
-        || `<div class="empty-inv" style="grid-column:1/-1"><b>Нет предметов</b><span>Открой кейс, чтобы было что положить в контракт</span><a class="btn green" href="#/">Открыть кейс</a></div>`;
+        || `<div class="empty-inv" style="grid-column:1/-1"><b>${lng('Нет предметов', 'No items')}</b><span>${lng('Открой кейс, чтобы было что положить в контракт', 'Open a case to have something to put in a contract')}</span><a class="btn green" href="#/">${lng('Открыть кейс', 'Open a case')}</a></div>`;
     }
     el.addEventListener('click', (e) => {
       if (busy) return;
       const a = e.target.closest('[data-add]'), r = e.target.closest('[data-rm]');
-      if (a) { if (slots.length >= 10) return toast('Максимум 10 предметов'); slots.push(a.dataset.add); render(); }
+      if (a) { if (slots.length >= 10) return toast(lng('Максимум 10 предметов', 'Up to 10 items')); slots.push(a.dataset.add); render(); }
       if (r) { slots.splice(slots.indexOf(r.dataset.rm), 1); render(); }
     });
     $('#cGo', el).onclick = async () => {
@@ -867,28 +871,28 @@
         <div class="panel prof-head">
           <div class="ava">${esc(S.nick[0].toUpperCase())}</div>
           <div style="flex:1;min-width:200px">
-            <div class="row"><input class="input" id="nick" maxlength="20" value="${esc(S.nick)}" style="max-width:260px"><button class="btn ghost" id="saveNick">Сохранить</button></div>
-            <div class="muted" style="margin-top:6px">Ник показывается в ленте последних дропов</div>
+            <div class="row"><input class="input" id="nick" maxlength="20" value="${esc(S.nick)}" style="max-width:260px"><button class="btn ghost" id="saveNick">${lng('Сохранить', 'Save')}</button></div>
+            <div class="muted" style="margin-top:6px">${lng('Ник показывается в ленте последних дропов', 'Your nickname shows up in the latest drops feed')}</div>
           </div>
-          <div><div class="muted">На счету</div><div class="cond" style="font-size:32px;color:var(--yellow)">${rub(S.balance)}</div></div>
+          <div><div class="muted">${lng('На счету', 'Balance')}</div><div class="cond" style="font-size:32px;color:var(--yellow)">${rub(S.balance)}</div></div>
         </div>
         <div class="stat-grid">
-          <div class="panel"><b>${S.st.opened}</b><span>кейсов открыто</span></div>
-          <div class="panel"><b>${S.st.upgWin}/${S.st.upg}</b><span>апгрейдов успешно</span></div>
-          <div class="panel"><b>${S.st.battleWin}/${S.st.battles}</b><span>батлов выиграно</span></div>
-          <div class="panel"><b>${S.st.contracts}</b><span>контрактов</span></div>
-          <div class="panel"><b>${rub(S.cashback)}</b><span>кешбек к выплате (<a href="#/upgrade">забрать</a>)</span></div>
-          <div class="panel"><b>${rub(S.st.best)}</b><span>лучший дроп${S.st.bestId ? ': ' + esc(SKIN[S.st.bestId].weapon + ' | ' + SKIN[S.st.bestId].skin) : ''}</span></div>
+          <div class="panel"><b>${S.st.opened}</b><span>${lng('кейсов открыто', 'cases opened')}</span></div>
+          <div class="panel"><b>${S.st.upgWin}/${S.st.upg}</b><span>${lng('апгрейдов успешно', 'upgrades succeeded')}</span></div>
+          <div class="panel"><b>${S.st.battleWin}/${S.st.battles}</b><span>${lng('батлов выиграно', 'battles won')}</span></div>
+          <div class="panel"><b>${S.st.contracts}</b><span>${lng('контрактов', 'contracts')}</span></div>
+          <div class="panel"><b>${rub(S.cashback)}</b><span>${lng('кешбек к выплате (<a href="#/upgrade">забрать</a>)', 'cashback to claim (<a href="#/upgrade">claim</a>)')}</span></div>
+          <div class="panel"><b>${rub(S.st.best)}</b><span>${lng('лучший дроп', 'best drop')}${S.st.bestId ? ': ' + esc(SKIN[S.st.bestId].weapon + ' | ' + SKIN[S.st.bestId].skin) : ''}</span></div>
         </div>
-        <div class="row" style="margin:26px 0 14px"><div class="cond" style="font-size:22px">Инвентарь · ${S.inv.length} шт. · ${rub(invSum)}</div><span class="spacer"></span>
-          <button class="btn green" id="sellAll" ${S.inv.length ? '' : 'disabled'}>Продать всё за ${rub(invSum)}</button></div>
-        <div class="item-grid">${S.inv.map((it) => `<div>${itemHtml(it.id)}<button class="btn ghost sm block" style="margin-top:6px" data-sell="${it.u}">Продать</button></div>`).join('')
-          || `<div class="empty-inv" style="grid-column:1/-1"><b>Ваш инвентарь пуст</b><span>Открой свой первый кейс</span><a class="btn green" href="#/">${icon('box')} Открыть кейс</a></div>`}</div>
-        <div class="row" style="margin-top:30px"><span class="spacer"></span><button class="btn red sm" id="reset">Сбросить прогресс</button></div>`;
-      $('#saveNick', el).onclick = () => { const v = $('#nick', el).value.trim().slice(0, 20); if (v) { S.nick = v; save(); header(); toast('Ник сохранён', 'good'); render(); } };
+        <div class="row" style="margin:26px 0 14px"><div class="cond" style="font-size:22px">${lng('Инвентарь', 'Inventory')} · ${S.inv.length} ${lng('шт.', 'pcs')} · ${rub(invSum)}</div><span class="spacer"></span>
+          <button class="btn green" id="sellAll" ${S.inv.length ? '' : 'disabled'}>${lng('Продать всё за', 'Sell all for')} ${rub(invSum)}</button></div>
+        <div class="item-grid">${S.inv.map((it) => `<div>${itemHtml(it.id)}<button class="btn ghost sm block" style="margin-top:6px" data-sell="${it.u}">${lng('Продать', 'Sell')}</button></div>`).join('')
+          || `<div class="empty-inv" style="grid-column:1/-1"><b>${lng('Ваш инвентарь пуст', 'Your inventory is empty')}</b><span>${lng('Открой свой первый кейс', 'Open your first case')}</span><a class="btn green" href="#/">${icon('box')} ${lng('Открыть кейс', 'Open a case')}</a></div>`}</div>
+        <div class="row" style="margin-top:30px"><span class="spacer"></span><button class="btn red sm" id="reset">${lng('Сбросить прогресс', 'Reset progress')}</button></div>`;
+      $('#saveNick', el).onclick = () => { const v = $('#nick', el).value.trim().slice(0, 20); if (v) { S.nick = v; save(); header(); toast(lng('Ник сохранён', 'Nickname saved'), 'good'); render(); } };
       $('#sellAll', el).onclick = () => { sell(S.inv.map((x) => x.u)); render(); };
       $('#reset', el).onclick = () => {
-        modal('<h3>Сбросить всё?</h3><p class="muted" style="text-align:center">Баланс, инвентарь и статистика обнулятся.</p><div class="actions"><button class="btn ghost" data-x="0">Отмена</button><button class="btn red" data-x="1">Сбросить</button></div>', (bg, close) => {
+        modal(`<h3>${lng('Сбросить всё?', 'Reset everything?')}</h3><p class="muted" style="text-align:center">${lng('Баланс, инвентарь и статистика обнулятся.', 'Balance, inventory and stats will be wiped.')}</p><div class="actions"><button class="btn ghost" data-x="0">${lng('Отмена', 'Cancel')}</button><button class="btn red" data-x="1">${lng('Сбросить', 'Reset')}</button></div>`, (bg, close) => {
           bg.addEventListener('click', (e) => {
             const b = e.target.closest('[data-x]'); if (!b) return;
             if (b.dataset.x === '1') { try { localStorage.removeItem('cb2:state'); } catch (err) { /* ignore */ } location.reload(); }
@@ -903,36 +907,36 @@
 
   // ---------- промокоды и пополнение (виртуальное) ----------
   const PROMOS = {
-    'BEER-20': { desc: '+20% к балансу (от 100 до 500 ₽)', apply: () => { const v = Math.max(100, Math.min(500, Math.round(S.balance * 0.2))); setBalance(S.balance + v); return '+' + rub(v); } },
+    'BEER-20': { desc: lng('+20% к балансу (от 100 до 500 ₽)', '+20% to balance (100 to 500 ₽)'), apply: () => { const v = Math.max(100, Math.min(500, Math.round(S.balance * 0.2))); setBalance(S.balance + v); return '+' + rub(v); } },
     'CASEBEER': { desc: '+300 ₽', apply: () => { setBalance(S.balance + 300); return '+300 ₽'; } },
-    'LAFORE': { desc: 'случайный нож', apply: () => { const id = pick(KNIVES.filter((k) => SKIN[k].price <= 60000)); addItem(id); myDrop(id, 'knife'); return SKIN[id].weapon + ' | ' + SKIN[id].skin; } },
+    'LAFORE': { desc: lng('случайный нож', 'a random knife'), apply: () => { const id = pick(KNIVES.filter((k) => SKIN[k].price <= 60000)); addItem(id); myDrop(id, 'knife'); return SKIN[id].weapon + ' | ' + SKIN[id].skin; } },
   };
   function applyPromo(code) {
     code = String(code || '').trim().toUpperCase();
     const p = PROMOS[code];
-    if (!p) { toast('Такого промокода нет', 'bad'); return false; }
-    if (S.promos.includes(code)) { toast('Промокод уже использован', 'bad'); return false; }
+    if (!p) { toast(lng('Такого промокода нет', 'No such promo code'), 'bad'); return false; }
+    if (S.promos.includes(code)) { toast(lng('Промокод уже использован', 'Promo code already used'), 'bad'); return false; }
     S.promos.push(code);
     const res = p.apply();
     save();
-    toast(`Промокод ${code} активирован: ${res}`, 'good');
+    toast(`${lng('Промокод', 'Promo code')} ${code} ${lng('активирован', 'activated')}: ${res}`, 'good');
     return true;
   }
   function openTopUp() {
     const left = S.bonusAt - Date.now();
-    modal(`<h3>Пополнение</h3>
-      <p class="muted" style="text-align:center;margin:0 0 14px">Всё на виртуальные рубли — настоящие деньги не принимаются и не выводятся.</p>
+    modal(`<h3>${lng('Пополнение', 'Top up')}</h3>
+      <p class="muted" style="text-align:center;margin:0 0 14px">${lng('Всё на виртуальные рубли — настоящие деньги не принимаются и не выводятся.', 'Everything is in virtual rubles — no real money is accepted or paid out.')}</p>
       <div class="panel" style="text-align:center;margin-bottom:12px">
-        <div class="cond" style="font-size:20px">Бонус <b style="color:var(--yellow)">+500 ₽</b> раз в 30 минут</div>
-        <button class="btn green lg" id="claim" style="margin-top:10px" ${left > 0 ? 'disabled' : ''}>${left > 0 ? 'Через ' + clock(left) : 'Забрать +500 ₽'}</button>
+        <div class="cond" style="font-size:20px">${lng('Бонус', 'Bonus')} <b style="color:var(--yellow)">+500 ₽</b> ${lng('раз в 30 минут', 'every 30 minutes')}</div>
+        <button class="btn green lg" id="claim" style="margin-top:10px" ${left > 0 ? 'disabled' : ''}>${left > 0 ? lng('Через ', 'In ') + clock(left) : lng('Забрать +500 ₽', 'Claim +500 ₽')}</button>
       </div>
-      <div class="panel"><div class="cond" style="font-size:18px;margin-bottom:8px">Промокод</div>
-        <div class="row nowrap" style="flex-wrap:nowrap"><input class="input" id="code" placeholder="Например, BEER-20"><button class="btn" id="codeBtn">OK</button></div></div>`, (bg, close) => {
+      <div class="panel"><div class="cond" style="font-size:18px;margin-bottom:8px">${lng('Промокод', 'Promo code')}</div>
+        <div class="row nowrap" style="flex-wrap:nowrap"><input class="input" id="code" placeholder="${lng('Например, BEER-20', 'For example, BEER-20')}"><button class="btn" id="codeBtn">OK</button></div></div>`, (bg, close) => {
       $('#claim', bg).onclick = () => {
         if (S.bonusAt > Date.now()) return;
         S.bonusAt = Date.now() + 30 * 60e3;
         setBalance(S.balance + 500);
-        toast('+500 ₽ на баланс', 'good');
+        toast(lng('+500 ₽ на баланс', '+500 ₽ to your balance'), 'good');
         close();
       };
       $('#codeBtn', bg).onclick = () => { if (applyPromo($('#code', bg).value)) close(); };
@@ -940,10 +944,10 @@
   }
 
   /* ---------------- шапка и роутер ---------------- */
-  const NAV = [['cases', '#/', 'Кейсы'], ['upgrade', '#/upgrade', 'Апгрейд'], ['battles', '#/battles', 'Батлы'], ['contracts', '#/contracts', 'Контракты']];
+  const NAV = [['cases', '#/', lng('Кейсы', 'Cases')], ['upgrade', '#/upgrade', lng('Апгрейд', 'Upgrade')], ['battles', '#/battles', lng('Батлы', 'Battles')], ['contracts', '#/contracts', lng('Контракты', 'Contracts')]];
   function header() {
     $('#nav').innerHTML = NAV.map(([k, href, label]) => `<a href="${href}" data-k="${k}">${icon(k)}${label}</a>`).join('');
-    $('#mnav').innerHTML = [...NAV, ['profile', '#/profile', 'Профиль']].map(([k, href, label]) => `<a href="${href}" data-k="${k}">${icon(k)}${label}</a>`).join('');
+    $('#mnav').innerHTML = [...NAV, ['profile', '#/profile', lng('Профиль', 'Profile')]].map(([k, href, label]) => `<a href="${href}" data-k="${k}">${icon(k)}${label}</a>`).join('');
     $('#ava').textContent = S.nick[0].toUpperCase();
     $('#nickT').textContent = S.nick;
     $('#balanceText').textContent = rub(S.balance);
@@ -970,7 +974,7 @@
       else pageHome(el);
     } catch (e) {
       console.error(e);
-      el.innerHTML = '<div class="panel">Что-то пошло не так. Обнови страницу.</div>';
+      el.innerHTML = `<div class="panel">${lng('Что-то пошло не так. Обнови страницу.', 'Something went wrong. Reload the page.')}</div>`;
     }
     window.scrollTo(0, 0);
   }
@@ -979,6 +983,7 @@
     buildSprite();
     header();
     $('#topup').onclick = openTopUp;
+    $('#langBtn').onclick = () => L10N.set(lng('en', 'ru'));
     startFeed();
     window.addEventListener('hashchange', route);
     route();

@@ -1,4 +1,6 @@
 'use strict';
+// без lang.js (старая страница из кэша) — всё по-русски
+if (!window.L10N) { window.lng = (ru) => ru; window.L10N = { lang: 'ru', en: false, locale: 'ru-RU', apply() {}, set() {} }; }
 /* =========================================================
    Rice: калькулятор риса + переводчик из риса во всё подряд
    ========================================================= */
@@ -34,6 +36,8 @@
     applyTheme();
   };
   applyTheme();
+  $('#langBtn').textContent = lng('EN', 'RU');
+  $('#langBtn').onclick = () => L10N.set(lng('en', 'ru'));
   window.addEventListener('scroll', () => $('#topbar').classList.toggle('scrolled', window.scrollY > 4), { passive: true });
 
   /* ---------- снекбар ---------- */
@@ -46,13 +50,15 @@
   }
 
   /* ---------- числа ---------- */
+  const LOC = L10N.locale;
+  const DEC = lng(',', '.');
   const SUP = { '-': '⁻', 0: '⁰', 1: '¹', 2: '²', 3: '³', 4: '⁴', 5: '⁵', 6: '⁶', 7: '⁷', 8: '⁸', 9: '⁹' };
   const minus = (s) => s.replace('-', '−');
 
   // 2,25 × 10¹² для очень больших и очень маленьких, иначе обычная запись
   function sci(v, digits) {
     const [m, e] = v.toExponential(digits).split('e');
-    return minus(String(parseFloat(m)).replace('.', ',')) + ' × 10' + String(+e).split('').map((c) => SUP[c]).join('');
+    return minus(String(parseFloat(m)).replace('.', DEC)) + ' × 10' + String(+e).split('').map((c) => SUP[c]).join('');
   }
   function fmtNum(v) {
     if (Number.isNaN(v)) return '—';
@@ -61,25 +67,29 @@
     const a = Math.abs(v);
     if (a >= 1e15 || a < 1e-6) return sci(v, 3);
     return minus(a >= 1e6
-      ? v.toLocaleString('ru-RU', { maximumFractionDigits: 0 })
-      : v.toLocaleString('ru-RU', { maximumSignificantDigits: 6 }));
+      ? v.toLocaleString(LOC, { maximumFractionDigits: 0 })
+      : v.toLocaleString(LOC, { maximumSignificantDigits: 6 }));
   }
-  // для полей ввода: без пробелов-разделителей, чтобы было удобно править
+  // для полей ввода: без разделителей разрядов, чтобы было удобно править
   function fmtInput(v) {
     if (!isFinite(v)) return '';
     const a = Math.abs(v);
     if (a !== 0 && (a >= 1e15 || a < 1e-6)) {
       const [m, e] = v.toExponential(5).split('e');
-      return String(parseFloat(m)).replace('.', ',') + 'e' + e.replace('+', '');
+      return String(parseFloat(m)).replace('.', DEC) + 'e' + e.replace('+', '');
     }
-    return v.toLocaleString('ru-RU', { maximumSignificantDigits: 8, useGrouping: false });
+    return v.toLocaleString(LOC, { maximumSignificantDigits: 8, useGrouping: false });
   }
+  // по-русски запятая — дробная часть, по-английски — разделитель разрядов
   function parseNum(s) {
-    s = String(s).replace(/\s/g, '').replace(',', '.').replace('−', '-');
+    s = String(s).replace(/\s/g, '').replace('−', '-');
+    s = L10N.en ? s.replace(/,/g, '') : s.replace(',', '.');
     if (!/^[-+]?(\d+\.?\d*|\.\d+)(e[-+]?\d+)?$/i.test(s)) return NaN;
     return parseFloat(s);
   }
+  // формы: по-русски [1, 2–4, 5+], по-английски [1, остальное]
   function plural(n, forms) {
+    if (forms.length === 2) return Math.abs(n) === 1 ? forms[0] : forms[1];
     if (!Number.isInteger(n)) return forms[1];
     const n100 = Math.abs(n) % 100, n10 = n100 % 10;
     if (n100 > 10 && n100 < 20) return forms[2];
@@ -87,20 +97,20 @@
     if (n10 > 1 && n10 < 5) return forms[1];
     return forms[2];
   }
-  const GRAIN_WORDS = ['зерно', 'зерна', 'зёрен'];
+  const GRAIN_WORDS = lng(['зерно', 'зерна', 'зёрен'], ['grain', 'grains']);
 
-  const TIME_UNITS = [[31557600, 'г.'], [86400, 'дн'], [3600, 'ч'], [60, 'мин'], [1, 'с']];
+  const TIME_UNITS = [[31557600, lng('г.', 'y')], [86400, lng('дн', 'd')], [3600, lng('ч', 'h')], [60, lng('мин', 'min')], [1, lng('с', 's')]];
   function humanTime(sec) {
     if (!isFinite(sec)) return fmtNum(sec);
     const sign = sec < 0 ? '−' : '';
     sec = Math.abs(sec);
-    if (sec < 60) return sign + fmtNum(sec) + ' с';
-    if (sec >= 31557600 * 1e4) return sign + fmtNum(sec / 31557600) + ' лет';
+    if (sec < 60) return sign + fmtNum(sec) + ' ' + lng('с', 's');
+    if (sec >= 31557600 * 1e4) return sign + fmtNum(sec / 31557600) + ' ' + lng('лет', 'years');
     sec = Math.round(sec);
     const i = TIME_UNITS.findIndex(([k]) => sec >= k);
     const [k, u] = TIME_UNITS[i];
     const major = Math.floor(sec / k);
-    let out = major.toLocaleString('ru-RU') + ' ' + u;
+    let out = major.toLocaleString(LOC) + ' ' + u;
     const next = TIME_UNITS[i + 1];
     if (next) {
       const minor = Math.floor((sec - major * k) / next[0]);
@@ -109,12 +119,12 @@
     return sign + out;
   }
 
-  const BYTE_UNITS = ['Б', 'КБ', 'МБ', 'ГБ', 'ТБ', 'ПБ', 'ЭБ', 'ЗБ', 'ИБ'];
+  const BYTE_UNITS = lng(['Б', 'КБ', 'МБ', 'ГБ', 'ТБ', 'ПБ', 'ЭБ', 'ЗБ', 'ИБ'], ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']);
   function humanBytes(bits) {
-    if (!isFinite(bits) || Math.abs(bits) < 8) return fmtNum(bits) + ' бит';
+    if (!isFinite(bits) || Math.abs(bits) < 8) return fmtNum(bits) + ' ' + lng('бит', 'bits');
     let v = bits / 8, i = 0;
     while (Math.abs(v) >= 1024 && i < BYTE_UNITS.length - 1) { v /= 1024; i++; }
-    return (Math.abs(v) < 1e6 ? minus(v.toLocaleString('ru-RU', { maximumFractionDigits: 2 })) : fmtNum(v)) + ' ' + BYTE_UNITS[i];
+    return (Math.abs(v) < 1e6 ? minus(v.toLocaleString(LOC, { maximumFractionDigits: 2 })) : fmtNum(v)) + ' ' + BYTE_UNITS[i];
   }
 
   /* ---------- рисовая физика ---------- */
@@ -123,112 +133,115 @@
     mass: 0.025,    // г
     density: 0.8,   // г/мл — насыпная плотность сухого риса
     kcal: 0.09,     // ккал (≈ 360 ккал на 100 г)
-    price: 0.12,    // ₽ за грамм (120 ₽/кг)
+    price: lng(0.12, 0.002),  // за грамм: 120 ₽/кг или $2/кг
   };
+  const PINT = lng(250, 6);                     // кружка пива: 250 ₽ или $6
   const L = GRAIN.len;
   const VOL = GRAIN.mass / GRAIN.density;      // мл на зерно, насыпью
   const KG = GRAIN.mass / 1000;
   const C = 299792458;                          // скорость света, м/с
   const SPERM_ML = 3;                           // объём, мл
   const SPERM_NORM = 16;                        // млн/мл, нижняя граница ВОЗ
+  const G = lng('г', 'g');
 
   function lenText(m) {
     const a = Math.abs(m);
-    if (a < 1) return fmtNum(m * 100) + ' см';
-    if (a < 1000) return fmtNum(m) + ' м';
-    return fmtNum(m / 1000) + ' км';
+    if (a < 1) return fmtNum(m * 100) + ' ' + lng('см', 'cm');
+    if (a < 1000) return fmtNum(m) + ' ' + lng('м', 'm');
+    return fmtNum(m / 1000) + ' ' + lng('км', 'km');
   }
 
   function spermNote(grains) {
     const c = grains / SPERM_ML / 1e6;
-    if (c < SPERM_NORM) return `ниже нормы ВОЗ (${SPERM_NORM} млн/мл): докинь ещё ${fmtNum((SPERM_NORM * SPERM_ML * 1e6 - grains) * KG)} кг риса`;
-    if (c <= 250) return 'норма ВОЗ ✅';
-    return 'это уже рисовая каша 🍚';
+    const more = fmtNum((SPERM_NORM * SPERM_ML * 1e6 - grains) * KG);
+    if (c < SPERM_NORM) return lng(`ниже нормы ВОЗ (${SPERM_NORM} млн/мл): докинь ещё ${more} кг риса`, `below the WHO norm (${SPERM_NORM} M/ml): add ${more} kg more rice`);
+    if (c <= 250) return lng('норма ВОЗ ✅', 'WHO norm ✅');
+    return lng('это уже рисовая каша 🍚', 'that’s rice porridge now 🍚');
   }
 
   const RICE_UNITS = [
-    { id: 'grain', name: 'Зёрна', forms: GRAIN_WORDS, k: 1 },
-    { id: 'g', name: 'Граммы', short: 'г', k: 1 / GRAIN.mass },
-    { id: 'kg', name: 'Килограммы', short: 'кг', k: 1000 / GRAIN.mass },
-    { id: 'cup', name: 'Стаканы (250 мл)', forms: ['стакан', 'стакана', 'стаканов'], k: 250 / VOL },
-    { id: 'bag', name: 'Мешки (25 кг)', forms: ['мешок', 'мешка', 'мешков'], k: 25000 / GRAIN.mass },
+    { id: 'grain', name: lng('Зёрна', 'Grains'), forms: GRAIN_WORDS, k: 1 },
+    { id: 'g', name: lng('Граммы', 'Grams'), short: G, k: 1 / GRAIN.mass },
+    { id: 'kg', name: lng('Килограммы', 'Kilograms'), short: lng('кг', 'kg'), k: 1000 / GRAIN.mass },
+    { id: 'cup', name: lng('Стаканы (250 мл)', 'Cups (250 ml)'), forms: lng(['стакан', 'стакана', 'стаканов'], ['cup', 'cups']), k: 250 / VOL },
+    { id: 'bag', name: lng('Мешки (25 кг)', 'Bags (25 kg)'), forms: lng(['мешок', 'мешка', 'мешков'], ['bag', 'bags']), k: 25000 / GRAIN.mass },
   ];
   const riceAmount = (u, n) => fmtNum(n) + ' ' + (u.short || plural(n, u.forms));
 
   const CATS = [
-    { id: 'len', name: 'Длина', icon: 'straighten', hint: 'если выложить все зёрна в линию, 1 зерно ≈ 7 мм' },
-    { id: 'game', name: 'Игры', icon: 'sports_esports', hint: 'та же рисовая линия в игровых единицах' },
-    { id: 'vol', name: 'Объём', icon: 'water_drop', hint: 'насыпью, 1 л ≈ 800 г риса' },
-    { id: 'mass', name: 'Масса', icon: 'scale', hint: '1 зерно ≈ 25 мг' },
-    { id: 'elec', name: 'Электричество', icon: 'bolt', hint: 'каждое зерно — батарейка АА на 1,5 В, всё последовательно' },
-    { id: 'energy', name: 'Энергия', icon: 'local_fire_department', hint: 'сколько энергии сидит в рисе' },
-    { id: 'speed', name: 'Скорость', icon: 'speed', hint: 'пробежать всю рисовую линию за 1 секунду' },
-    { id: 'bio', name: 'Биология', icon: 'biotech', hint: 'рис глазами биолога' },
-    { id: 'money', name: 'Деньги и время', icon: 'payments', hint: 'во что обойдётся и сколько считать' },
-    { id: 'data', name: 'Данные', icon: 'memory', hint: '1 зерно = 1 бит' },
+    { id: 'len', name: lng('Длина', 'Length'), icon: 'straighten', hint: lng('если выложить все зёрна в линию, 1 зерно ≈ 7 мм', 'all grains laid end to end, 1 grain ≈ 7 mm') },
+    { id: 'game', name: lng('Игры', 'Games'), icon: 'sports_esports', hint: lng('та же рисовая линия в игровых единицах', 'the same rice line in game units') },
+    { id: 'vol', name: lng('Объём', 'Volume'), icon: 'water_drop', hint: lng('насыпью, 1 л ≈ 800 г риса', 'loose, 1 l ≈ 800 g of rice') },
+    { id: 'mass', name: lng('Масса', 'Mass'), icon: 'scale', hint: lng('1 зерно ≈ 25 мг', '1 grain ≈ 25 mg') },
+    { id: 'elec', name: lng('Электричество', 'Electricity'), icon: 'bolt', hint: lng('каждое зерно — батарейка АА на 1,5 В, всё последовательно', 'every grain is a 1.5 V AA battery, all in series') },
+    { id: 'energy', name: lng('Энергия', 'Energy'), icon: 'local_fire_department', hint: lng('сколько энергии сидит в рисе', 'how much energy hides in rice') },
+    { id: 'speed', name: lng('Скорость', 'Speed'), icon: 'speed', hint: lng('пробежать всю рисовую линию за 1 секунду', 'run the whole rice line in 1 second') },
+    { id: 'bio', name: lng('Биология', 'Biology'), icon: 'biotech', hint: lng('рис глазами биолога', 'rice through a biologist’s eyes') },
+    { id: 'money', name: lng('Деньги и время', 'Money & time'), icon: 'payments', hint: lng('во что обойдётся и сколько считать', 'what it costs and how long to count it') },
+    { id: 'data', name: lng('Данные', 'Data'), icon: 'memory', hint: lng('1 зерно = 1 бит', '1 grain = 1 bit') },
   ];
 
   // k — сколько единиц приходится на одно зерно
   const TARGETS = [
-    { id: 'mm', cat: 'len', e: '📏', name: 'Миллиметры', sym: 'мм', k: L * 1000 },
-    { id: 'cm', cat: 'len', e: '📏', name: 'Сантиметры', sym: 'см', k: L * 100 },
-    { id: 'm', cat: 'len', e: '📐', name: 'Метры', sym: 'м', k: L },
-    { id: 'km', cat: 'len', e: '🛣️', name: 'Километры', sym: 'км', k: L / 1000 },
-    { id: 'in', cat: 'len', e: '🇺🇸', name: 'Дюймы', sym: 'дюйм.', k: L / 0.0254 },
-    { id: 'banana', cat: 'len', e: '🍌', name: 'Бананы', k: L / 0.18, hint: 'banana for scale, 18 см' },
-    { id: 'parrot', cat: 'len', e: '🦜', name: 'Попугаи', k: L / 0.1, hint: 'удав = 38 попугаев' },
-    { id: 'field', cat: 'len', e: '⚽', name: 'Футбольные поля', k: L / 105, hint: '105 м' },
-    { id: 'eiffel', cat: 'len', e: '🗼', name: 'Эйфелевы башни', k: L / 330, hint: '330 м' },
-    { id: 'moon', cat: 'len', e: '🌕', name: 'Расстояния до Луны', k: L / 384400000, hint: '384 400 км' },
+    { id: 'mm', cat: 'len', e: '📏', name: lng('Миллиметры', 'Millimeters'), sym: lng('мм', 'mm'), k: L * 1000 },
+    { id: 'cm', cat: 'len', e: '📏', name: lng('Сантиметры', 'Centimeters'), sym: lng('см', 'cm'), k: L * 100 },
+    { id: 'm', cat: 'len', e: '📐', name: lng('Метры', 'Meters'), sym: lng('м', 'm'), k: L },
+    { id: 'km', cat: 'len', e: '🛣️', name: lng('Километры', 'Kilometers'), sym: lng('км', 'km'), k: L / 1000 },
+    { id: 'in', cat: 'len', e: '🇺🇸', name: lng('Дюймы', 'Inches'), sym: lng('дюйм.', 'in'), k: L / 0.0254 },
+    { id: 'banana', cat: 'len', e: '🍌', name: lng('Бананы', 'Bananas'), k: L / 0.18, hint: lng('banana for scale, 18 см', 'banana for scale, 18 cm') },
+    { id: 'parrot', cat: 'len', e: '🦜', name: lng('Попугаи', 'Parrots'), k: L / 0.1, hint: lng('удав = 38 попугаев', 'a boa is 38 parrots long') },
+    { id: 'field', cat: 'len', e: '⚽', name: lng('Футбольные поля', 'Football fields'), k: L / 105, hint: lng('105 м', '105 m') },
+    { id: 'eiffel', cat: 'len', e: '🗼', name: lng('Эйфелевы башни', 'Eiffel Towers'), k: L / 330, hint: lng('330 м', '330 m') },
+    { id: 'moon', cat: 'len', e: '🌕', name: lng('Расстояния до Луны', 'Trips to the Moon'), k: L / 384400000, hint: lng('384 400 км', '384,400 km') },
 
-    { id: 'stud', cat: 'game', e: '🧱', name: 'Стады Roblox', sym: 'studs', k: L / 0.28, hint: '1 стад = 28 см' },
-    { id: 'noob', cat: 'game', e: '🙂', name: 'Нубы Roblox в рост', k: L / (5 * 0.28), hint: 'персонаж ≈ 5 стадов' },
-    { id: 'hu', cat: 'game', e: '🔫', name: 'Юниты CS2', sym: 'u', k: L / 0.0254, hint: '1 юнит ≈ 1 дюйм (Source 2)' },
-    { id: 'csman', cat: 'game', e: '🧍', name: 'Игроки CS2 в рост', k: L / (72 * 0.0254), hint: 'игрок = 72 юнита' },
-    { id: 'mc', cat: 'game', e: '⛏️', name: 'Блоки Minecraft', k: L, hint: '1 блок = 1 м' },
-    { id: 'px', cat: 'game', e: '🖥️', name: 'Пиксели', sym: 'px', k: L / (0.0254 / 96), hint: 'при 96 DPI' },
+    { id: 'stud', cat: 'game', e: '🧱', name: lng('Стады Roblox', 'Roblox studs'), sym: 'studs', k: L / 0.28, hint: lng('1 стад = 28 см', '1 stud = 28 cm') },
+    { id: 'noob', cat: 'game', e: '🙂', name: lng('Нубы Roblox в рост', 'Roblox noobs tall'), k: L / (5 * 0.28), hint: lng('персонаж ≈ 5 стадов', 'a character ≈ 5 studs') },
+    { id: 'hu', cat: 'game', e: '🔫', name: lng('Юниты CS2', 'CS2 units'), sym: 'u', k: L / 0.0254, hint: lng('1 юнит ≈ 1 дюйм (Source 2)', '1 unit ≈ 1 inch (Source 2)') },
+    { id: 'csman', cat: 'game', e: '🧍', name: lng('Игроки CS2 в рост', 'CS2 players tall'), k: L / (72 * 0.0254), hint: lng('игрок = 72 юнита', 'a player = 72 units') },
+    { id: 'mc', cat: 'game', e: '⛏️', name: lng('Блоки Minecraft', 'Minecraft blocks'), k: L, hint: lng('1 блок = 1 м', '1 block = 1 m') },
+    { id: 'px', cat: 'game', e: '🖥️', name: lng('Пиксели', 'Pixels'), sym: 'px', k: L / (0.0254 / 96), hint: lng('при 96 DPI', 'at 96 DPI') },
 
-    { id: 'ml', cat: 'vol', e: '💧', name: 'Миллилитры', sym: 'мл', k: VOL },
-    { id: 'l', cat: 'vol', e: '🧴', name: 'Литры', sym: 'л', k: VOL / 1000 },
-    { id: 'm3', cat: 'vol', e: '📦', name: 'Кубометры', sym: 'м³', k: VOL / 1e6 },
-    { id: 'tsp', cat: 'vol', e: '🥄', name: 'Чайные ложки', k: VOL / 5, hint: '5 мл' },
-    { id: 'glass', cat: 'vol', e: '🥛', name: 'Стаканы', k: VOL / 250, hint: '250 мл' },
-    { id: 'beer', cat: 'vol', e: '🍺', name: 'Бутылки пива', k: VOL / 500, hint: '0,5 л' },
-    { id: 'bath', cat: 'vol', e: '🛁', name: 'Ванны', k: VOL / 150000, hint: '150 л' },
+    { id: 'ml', cat: 'vol', e: '💧', name: lng('Миллилитры', 'Milliliters'), sym: lng('мл', 'ml'), k: VOL },
+    { id: 'l', cat: 'vol', e: '🧴', name: lng('Литры', 'Liters'), sym: lng('л', 'l'), k: VOL / 1000 },
+    { id: 'm3', cat: 'vol', e: '📦', name: lng('Кубометры', 'Cubic meters'), sym: lng('м³', 'm³'), k: VOL / 1e6 },
+    { id: 'tsp', cat: 'vol', e: '🥄', name: lng('Чайные ложки', 'Teaspoons'), k: VOL / 5, hint: lng('5 мл', '5 ml') },
+    { id: 'glass', cat: 'vol', e: '🥛', name: lng('Стаканы', 'Glasses'), k: VOL / 250, hint: lng('250 мл', '250 ml') },
+    { id: 'beer', cat: 'vol', e: '🍺', name: lng('Бутылки пива', 'Beer bottles'), k: VOL / 500, hint: lng('0,5 л', '0.5 l') },
+    { id: 'bath', cat: 'vol', e: '🛁', name: lng('Ванны', 'Bathtubs'), k: VOL / 150000, hint: lng('150 л', '150 l') },
 
-    { id: 'mg', cat: 'mass', e: '⚖️', name: 'Миллиграммы', sym: 'мг', k: GRAIN.mass * 1000 },
-    { id: 'gr', cat: 'mass', e: '⚖️', name: 'Граммы', sym: 'г', k: GRAIN.mass },
-    { id: 'kgm', cat: 'mass', e: '🏋️', name: 'Килограммы', sym: 'кг', k: KG },
-    { id: 't', cat: 'mass', e: '🚛', name: 'Тонны', sym: 'т', k: KG / 1000 },
-    { id: 'elephant', cat: 'mass', e: '🐘', name: 'Слоны', k: KG / 5000, hint: '5 т' },
+    { id: 'mg', cat: 'mass', e: '⚖️', name: lng('Миллиграммы', 'Milligrams'), sym: lng('мг', 'mg'), k: GRAIN.mass * 1000 },
+    { id: 'gr', cat: 'mass', e: '⚖️', name: lng('Граммы', 'Grams'), sym: G, k: GRAIN.mass },
+    { id: 'kgm', cat: 'mass', e: '🏋️', name: lng('Килограммы', 'Kilograms'), sym: lng('кг', 'kg'), k: KG },
+    { id: 't', cat: 'mass', e: '🚛', name: lng('Тонны', 'Tonnes'), sym: lng('т', 't'), k: KG / 1000 },
+    { id: 'elephant', cat: 'mass', e: '🐘', name: lng('Слоны', 'Elephants'), k: KG / 5000, hint: lng('5 т', '5 t') },
 
-    { id: 'v', cat: 'elec', e: '🔋', name: 'Вольты', sym: 'В', k: 1.5, hint: '1 зерно = 1,5 В' },
-    { id: 'kv', cat: 'elec', e: '🔋', name: 'Киловольты', sym: 'кВ', k: 1.5 / 1000 },
-    { id: 'socket', cat: 'elec', e: '🔌', name: 'Розетки', k: 1.5 / 220, hint: '220 В' },
-    { id: 'lightning', cat: 'elec', e: '🌩️', name: 'Молнии', k: 1.5 / 3e8, hint: '≈ 300 млн В' },
+    { id: 'v', cat: 'elec', e: '🔋', name: lng('Вольты', 'Volts'), sym: lng('В', 'V'), k: 1.5, hint: lng('1 зерно = 1,5 В', '1 grain = 1.5 V') },
+    { id: 'kv', cat: 'elec', e: '🔋', name: lng('Киловольты', 'Kilovolts'), sym: lng('кВ', 'kV'), k: 1.5 / 1000 },
+    { id: 'socket', cat: 'elec', e: '🔌', name: lng('Розетки', 'Wall sockets'), k: 1.5 / 220, hint: lng('220 В', '220 V') },
+    { id: 'lightning', cat: 'elec', e: '🌩️', name: lng('Молнии', 'Lightning bolts'), k: 1.5 / 3e8, hint: lng('≈ 300 млн В', '≈ 300 million V') },
 
-    { id: 'kcal', cat: 'energy', e: '🔥', name: 'Калории', sym: 'ккал', k: GRAIN.kcal, hint: 'сухой рис ≈ 360 ккал на 100 г' },
-    { id: 'kettle', cat: 'energy', e: '☕', name: 'Вскипячённые чайники', k: GRAIN.kcal * 4184 / (1.7 * 80 * 4186), hint: 'если сжечь: 1,7 л с 20 до 100 °C' },
-    { id: 'mc2', cat: 'energy', e: '☢️', name: 'Энергия E = mc²', sym: 'Дж', k: KG * C * C, hint: 'если вся масса станет энергией' },
-    { id: 'tnt', cat: 'energy', e: '💥', name: 'Тротиловый эквивалент', sym: 'т', k: KG * C * C / 4.184e9, hint: 'та же E = mc² в тоннах тротила' },
+    { id: 'kcal', cat: 'energy', e: '🔥', name: lng('Калории', 'Calories'), sym: lng('ккал', 'kcal'), k: GRAIN.kcal, hint: lng('сухой рис ≈ 360 ккал на 100 г', 'dry rice ≈ 360 kcal per 100 g') },
+    { id: 'kettle', cat: 'energy', e: '☕', name: lng('Вскипячённые чайники', 'Boiled kettles'), k: GRAIN.kcal * 4184 / (1.7 * 80 * 4186), hint: lng('если сжечь: 1,7 л с 20 до 100 °C', 'if burned: 1.7 l from 20 to 100 °C') },
+    { id: 'mc2', cat: 'energy', e: '☢️', name: lng('Энергия E = mc²', 'Energy E = mc²'), sym: lng('Дж', 'J'), k: KG * C * C, hint: lng('если вся масса станет энергией', 'if all the mass turns into energy') },
+    { id: 'tnt', cat: 'energy', e: '💥', name: lng('Тротиловый эквивалент', 'TNT equivalent'), sym: lng('т', 't'), k: KG * C * C / 4.184e9, hint: lng('та же E = mc² в тоннах тротила', 'the same E = mc² in tonnes of TNT') },
 
-    { id: 'mps', cat: 'speed', e: '🏃', name: 'Метры в секунду', sym: 'м/с', k: L },
-    { id: 'kmh', cat: 'speed', e: '🚗', name: 'Километры в час', sym: 'км/ч', k: L * 3.6 },
-    { id: 'snail', cat: 'speed', e: '🐌', name: 'Улитки', k: L / 0.001, hint: 'улитка ползёт ≈ 1 мм/с' },
-    { id: 'mach', cat: 'speed', e: '✈️', name: 'Махи', sym: 'M', k: L / 343, hint: 'скорость звука 343 м/с' },
-    { id: 'light', cat: 'speed', e: '🌌', name: 'Скорости света', sym: 'c', k: L / C },
+    { id: 'mps', cat: 'speed', e: '🏃', name: lng('Метры в секунду', 'Meters per second'), sym: lng('м/с', 'm/s'), k: L },
+    { id: 'kmh', cat: 'speed', e: '🚗', name: lng('Километры в час', 'Kilometers per hour'), sym: lng('км/ч', 'km/h'), k: L * 3.6 },
+    { id: 'snail', cat: 'speed', e: '🐌', name: lng('Улитки', 'Snails'), k: L / 0.001, hint: lng('улитка ползёт ≈ 1 мм/с', 'a snail crawls ≈ 1 mm/s') },
+    { id: 'mach', cat: 'speed', e: '✈️', name: lng('Махи', 'Mach'), sym: 'M', k: L / 343, hint: lng('скорость звука 343 м/с', 'speed of sound 343 m/s') },
+    { id: 'light', cat: 'speed', e: '🌌', name: lng('Скорости света', 'Speeds of light'), sym: 'c', k: L / C },
 
-    { id: 'sperm', cat: 'bio', e: '🧪', name: 'Густота спермы', sym: 'млн/мл', k: 1 / SPERM_ML / 1e6, hint: 'каждое зерно — сперматозоид в 3 мл', note: spermNote },
-    { id: 'mosquito', cat: 'bio', e: '🦟', name: 'Комары по массе', k: GRAIN.mass / 0.0025, hint: 'комар ≈ 2,5 мг' },
-    { id: 'human', cat: 'bio', e: '🧍', name: 'Люди по массе', k: KG / 70, hint: '70 кг' },
+    { id: 'sperm', cat: 'bio', e: '🧪', name: lng('Густота спермы', 'Sperm density'), sym: lng('млн/мл', 'M/ml'), k: 1 / SPERM_ML / 1e6, hint: lng('каждое зерно — сперматозоид в 3 мл', 'every grain is a sperm cell in 3 ml'), note: spermNote },
+    { id: 'mosquito', cat: 'bio', e: '🦟', name: lng('Комары по массе', 'Mosquitoes by mass'), k: GRAIN.mass / 0.0025, hint: lng('комар ≈ 2,5 мг', 'a mosquito ≈ 2.5 mg') },
+    { id: 'human', cat: 'bio', e: '🧍', name: lng('Люди по массе', 'Humans by mass'), k: KG / 70, hint: lng('70 кг', '70 kg') },
 
-    { id: 'rub', cat: 'money', e: '💸', name: 'Рубли', sym: '₽', k: GRAIN.price * GRAIN.mass, hint: 'рис по 120 ₽/кг' },
-    { id: 'pint', cat: 'money', e: '🍻', name: 'Кружки пива', k: GRAIN.price * GRAIN.mass / 250, hint: 'по 250 ₽' },
-    { id: 'portion', cat: 'money', e: '🍛', name: 'Порции риса', k: GRAIN.mass / 75, hint: '75 г сухого риса' },
-    { id: 'count', cat: 'money', e: '⏱️', name: 'Пересчитать вручную', sym: 'с', k: 1, hint: '1 зерно в секунду без перерывов', fmt: humanTime },
+    { id: 'rub', cat: 'money', e: '💸', name: lng('Рубли', 'Dollars'), sym: lng('₽', '$'), k: GRAIN.price * GRAIN.mass, hint: lng('рис по 120 ₽/кг', 'rice at $2/kg') },
+    { id: 'pint', cat: 'money', e: '🍻', name: lng('Кружки пива', 'Pints of beer'), k: GRAIN.price * GRAIN.mass / PINT, hint: lng('по 250 ₽', '$6 each') },
+    { id: 'portion', cat: 'money', e: '🍛', name: lng('Порции риса', 'Rice portions'), k: GRAIN.mass / 75, hint: lng('75 г сухого риса', '75 g of dry rice') },
+    { id: 'count', cat: 'money', e: '⏱️', name: lng('Пересчитать вручную', 'Count by hand'), sym: lng('с', 's'), k: 1, hint: lng('1 зерно в секунду без перерывов', '1 grain per second, no breaks'), fmt: humanTime },
 
-    { id: 'bit', cat: 'data', e: '🧠', name: 'Информация', sym: 'бит', k: 1, hint: '1 зерно = 1 бит', fmt: humanBytes },
-    { id: 'floppy', cat: 'data', e: '💾', name: 'Дискеты', k: 1 / (1474560 * 8), hint: '1,44 МБ' },
+    { id: 'bit', cat: 'data', e: '🧠', name: lng('Информация', 'Information'), sym: lng('бит', 'bits'), k: 1, hint: lng('1 зерно = 1 бит', '1 grain = 1 bit'), fmt: humanBytes },
+    { id: 'floppy', cat: 'data', e: '💾', name: lng('Дискеты', 'Floppy disks'), k: 1 / (1474560 * 8), hint: lng('1,44 МБ', '1.44 MB') },
   ];
   const TARGET = Object.fromEntries(TARGETS.map((t) => [t.id, t]));
 
@@ -242,7 +255,8 @@
   let done = false;     // только что нажали «=»
   let result = 0;
   let resultExpr = '';
-  let calcErr = '';
+  let calcErr = '';      // 'div0' | 'overflow'
+  const ERR = { div0: lng('На ноль рис не делится 🍚', 'Rice can’t be divided by zero 🍚'), overflow: lng('Слишком много риса 🌾', 'Too much rice 🌾') };
   let calcVal = 0;      // текущее значение на экране — его можно отправить в переводчик
 
   // 200 + 10% = 220, 50 × 10% = 5, просто 10% = 0,1
@@ -281,7 +295,7 @@
     if (s.includes('e')) return minus(s);
     const neg = s.startsWith('-');
     const [int, frac] = (neg ? s.slice(1) : s).split('.');
-    const body = (int ? Number(int).toLocaleString('ru-RU') : '') + (frac !== undefined ? ',' + frac : '');
+    const body = (int ? Number(int).toLocaleString(LOC) : '') + (frac !== undefined ? DEC + frac : '');
     if (!neg) return body;
     if (!body) return first ? '−' : '(−';
     return first ? '−' + body : '(−' + body + ')';
@@ -292,7 +306,7 @@
     if (!isFinite(v)) return fmtNum(v);
     const a = Math.abs(v);
     if (a >= 1e15 || (a !== 0 && a < 1e-9)) return sci(v, 8);
-    return minus(v.toLocaleString('ru-RU', { maximumFractionDigits: 12 }));
+    return minus(v.toLocaleString(LOC, { maximumFractionDigits: 12 }));
   }
 
   function numToken(v) {
@@ -361,7 +375,7 @@
         if (!isFinite(result)) throw new Error('overflow');
       } catch (e) {
         result = NaN;
-        calcErr = e.message === 'div0' ? 'На ноль рис не делится 🍚' : 'Слишком много риса 🌾';
+        calcErr = e.message === 'div0' ? 'div0' : 'overflow';
       }
       done = true;
       if (!calcErr) epic(splitExpr(t), result);
@@ -374,7 +388,7 @@
     let text, live = '', prev = '';
     if (done) {
       prev = resultExpr;
-      text = calcErr || fmtCalc(result);
+      text = calcErr ? ERR[calcErr] : fmtCalc(result);
       calcVal = calcErr ? NaN : result;
     } else {
       text = tokens.length ? fmtExpr(tokens) : '0';
@@ -388,8 +402,8 @@
     $('#calcPrev').textContent = prev;
     $('#calcLive').textContent = live;
     $('#calcRice').textContent = isFinite(calcVal) && (tokens.length || done)
-      ? `🍚 ${fmtNum(calcVal)} ${plural(calcVal, GRAIN_WORDS)} ≈ ${fmtNum(calcVal * GRAIN.mass)} г · ${lenText(calcVal * L)} в линию`
-      : (calcErr ? '' : '🍚 считаем в зёрнах');
+      ? `🍚 ${fmtNum(calcVal)} ${plural(calcVal, GRAIN_WORDS)} ≈ ${fmtNum(calcVal * GRAIN.mass)} ${G} · ${lenText(calcVal * L)} ${lng('в линию', 'in a line')}`
+      : (calcErr ? '' : lng('🍚 считаем в зёрнах', '🍚 counting in grains'));
   }
 
   function riceRain() {
@@ -412,7 +426,8 @@
      камера наезжает, экран трясёт, цвета двоятся, к центру стягиваются лучи света.
      Тишина, белая вспышка — и под дроп в портале появляется ответ, летят зелёные галочки,
      фон мигает неоном. Клик или любая клавиша — пропустить. */
-  const EPIC_CAPS = ['Легендарно', 'Рисовый удар', 'Математика свершилась', 'Абсолютный рис', 'Критический урон', 'Это было эпично', 'Готово, шеф'];
+  const EPIC_CAPS = lng(['Легендарно', 'Рисовый удар', 'Математика свершилась', 'Абсолютный рис', 'Критический урон', 'Это было эпично', 'Готово, шеф'],
+    ['Legendary', 'Rice strike', 'Math has been done', 'Absolute rice', 'Critical hit', 'That was epic', 'Done, chef']);
   const NEON = ['#00ff6a', '#2979ff', '#b000ff', '#ff1744'];
   // секунды: подготовка → дрожь → орбита → кульминация → слияние → дроп → конец
   const T = { tension: 0.7, orbit: 1.7, climax: 2.9, merge: 3.9, drop: 4.1, end: 6.5, out: 6.9 };
@@ -584,7 +599,7 @@
     const el = document.createElement('div');
     el.className = 'epic';
     el.setAttribute('aria-hidden', 'true');
-    el.innerHTML = '<canvas></canvas><div class="epic-skip">нажми, чтобы пропустить</div>';
+    el.innerHTML = `<canvas></canvas><div class="epic-skip">${lng('нажми, чтобы пропустить', 'tap to skip')}</div>`;
     document.body.appendChild(el);
     const cv = $('canvas', el), g = cv.getContext('2d');
     const s = scene = { el, music, raf: 0, resize: null };
@@ -912,7 +927,7 @@
   unitSel.innerHTML = RICE_UNITS.map((u) => `<option value="${u.id}">${u.name}</option>`).join('');
   tgtSel.innerHTML = CATS.map((c) => `<optgroup label="${c.name}">${TARGETS.filter((t) => t.cat === c.id)
     .map((t) => `<option value="${t.id}">${t.name}${t.sym ? ' (' + t.sym + ')' : ''}</option>`).join('')}</optgroup>`).join('');
-  chips.innerHTML = [{ id: 'all', name: 'Все', icon: 'apps' }, ...CATS]
+  chips.innerHTML = [{ id: 'all', name: lng('Все', 'All'), icon: 'apps' }, ...CATS]
     .map((c) => `<button class="chip sl" data-cat="${c.id}"><span class="ms">${c.icon}</span>${c.name}</button>`).join('');
 
   const unit = () => RICE_UNITS.find((u) => u.id === unitSel.value) || RICE_UNITS[0];
@@ -940,8 +955,8 @@
   function update() {
     const t = target();
     $('#rcInHint').textContent = isFinite(grains)
-      ? `${fmtNum(grains)} ${plural(grains, GRAIN_WORDS)} · ${fmtNum(grains * GRAIN.mass)} г`
-      : 'введи число';
+      ? `${fmtNum(grains)} ${plural(grains, GRAIN_WORDS)} · ${fmtNum(grains * GRAIN.mass)} ${G}`
+      : lng('введи число', 'enter a number');
     const extra = isFinite(grains) && t.fmt ? t.fmt(grains * t.k) : '';
     const note = isFinite(grains) && t.note ? t.note(grains) : '';
     $('#rcOutHint').textContent = [extra, note || t.hint || CATS.find((c) => c.id === t.cat).hint].filter(Boolean).join(' · ');
@@ -953,7 +968,7 @@
       el.classList.toggle('on', item.id === t.id);
     });
 
-    store.set('rice:in', inEl.value);
+    store.set('rice:val', isFinite(parseNum(inEl.value)) ? parseNum(inEl.value) : null);
     store.set('rice:unit', unitSel.value);
     store.set('rice:target', tgtSel.value);
   }
@@ -964,7 +979,7 @@
       <section class="rgroup">
         <div class="rgroup-head"><span class="ms">${c.icon}</span><div><b>${c.name}</b><span>${c.hint}</span></div></div>
         <div class="rgrid">${TARGETS.filter((t) => t.cat === c.id).map((t) => `
-          <button class="rcard sl" data-id="${t.id}" title="Скопировать">
+          <button class="rcard sl" data-id="${t.id}" title="${lng('Скопировать', 'Copy')}">
             <span class="em">${t.e}</span>
             <span class="rc-body">
               <span class="nm">${t.name}</span>
@@ -980,7 +995,7 @@
   }
 
   function copy(text) {
-    const ok = () => snack('Скопировано: ' + text);
+    const ok = () => snack(lng('Скопировано: ', 'Copied: ') + text);
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(text).then(ok, () => snack(text));
       return;
@@ -1001,7 +1016,7 @@
     const t = TARGET[card.dataset.id];
     const n = parseNum(inEl.value);
     if (!isFinite(n)) return;
-    copy(`${riceAmount(unit(), n)} риса = ${$('.val', card).textContent.replace(/\s+/g, ' ').trim()} — ${t.name}`);
+    copy(`${riceAmount(unit(), n)} ${lng('риса', 'of rice')} = ${$('.val', card).textContent.replace(/\s+/g, ' ').trim()} — ${t.name}`);
   });
   chips.addEventListener('click', (e) => {
     const b = e.target.closest('button[data-cat]');
@@ -1017,19 +1032,24 @@
   tgtSel.addEventListener('change', fromRice);
 
   $('#calcSend').onclick = () => {
-    if (!isFinite(calcVal)) { snack('Сначала посчитай что-нибудь'); return; }
+    if (!isFinite(calcVal)) { snack(lng('Сначала посчитай что-нибудь', 'Calculate something first')); return; }
     unitSel.value = 'grain';
     inEl.value = fmtInput(calcVal);
     fromRice();
     $('#conv').scrollIntoView({ behavior: 'smooth', block: 'start' });
-    snack(`${fmtNum(calcVal)} ${plural(calcVal, GRAIN_WORDS)} отправлено в переводчик`);
+    snack(lng(`${fmtNum(calcVal)} ${plural(calcVal, GRAIN_WORDS)} отправлено в переводчик`, `${fmtNum(calcVal)} ${plural(calcVal, GRAIN_WORDS)} sent to the converter`));
   };
 
   /* ---------- старт ---------- */
   if (!CATS.some((c) => c.id === cat)) cat = 'all';
   unitSel.value = RICE_UNITS.some((u) => u.id === store.get('rice:unit')) ? store.get('rice:unit') : 'kg';
   tgtSel.value = TARGET[store.get('rice:target')] ? store.get('rice:target') : 'stud';
-  inEl.value = store.get('rice:in', '1');
+  const saved = store.get('rice:val', undefined);
+  if (saved !== undefined) inEl.value = saved == null ? '' : fmtInput(saved);
+  else {
+    const legacy = parseFloat(String(store.get('rice:in', '1')).replace(/\s/g, '').replace(',', '.'));
+    inEl.value = fmtInput(isFinite(legacy) ? legacy : 1);
+  }
   grains = parseNum(inEl.value) * unit().k;
   outEl.value = isFinite(grains) ? fmtInput(grains * target().k) : '';
   buildGrid();

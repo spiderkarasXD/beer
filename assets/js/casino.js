@@ -28,7 +28,7 @@
       while (s.goals < GOALS.length && s.cents >= GOALS[s.goals].c) {
         const g = GOALS[s.goals++];
         Beer.confetti(80);
-        snack('Цель достигнута: ' + g.label + ' 🏆', { duration: 4000 });
+        snack(lng('Цель достигнута: ', 'Goal reached: ') + g.label + ' 🏆', { duration: 4000 });
       }
     }
 
@@ -65,11 +65,11 @@
 
   async function offerReset() {
     const ok = await Beer.dialog({
-      icon: 'money_off', title: 'Ты банкрот 😵',
-      text: 'Деньги закончились. Начать заново с $10? Счётчик банкротств увеличится.',
-      actions: [{ label: 'Позже', value: false }, { label: 'Начать с $10', value: true, style: '' }],
+      icon: 'money_off', title: lng('Ты банкрот 😵', 'You’re broke 😵'),
+      text: lng('Деньги закончились. Начать заново с $10? Счётчик банкротств увеличится.', 'You ran out of money. Start over with $10? The bankruptcy counter goes up.'),
+      actions: [{ label: lng('Позже', 'Later'), value: false }, { label: lng('Начать с $10', 'Start with $10'), value: true, style: '' }],
     });
-    if (ok) { wallet.reset(); snack('Держи $10. Не проиграй сразу 😉'); }
+    if (ok) { wallet.reset(); snack(lng('Держи $10. Не проиграй сразу 😉', 'Here’s $10. Don’t lose it right away 😉')); }
   }
 
   /* ---------------- поле ставки ---------------- */
@@ -79,7 +79,7 @@
         <div class="field">
           <span class="prefix">$</span>
           <input type="number" inputmode="decimal" min="0.1" step="0.1">
-          <label>Ставка</label>
+          <label>${lng('Ставка', 'Bet')}</label>
         </div>
         <div class="quick">
           <button data-q="half">½</button>
@@ -105,9 +105,9 @@
       /** Валидирует ставку; возвращает центы или 0 (и показывает подсказку). */
       take() {
         const c = get();
-        if (!c || c < MIN_BET) { snack('Минимальная ставка — ' + money(MIN_BET)); return 0; }
+        if (!c || c < MIN_BET) { snack(lng('Минимальная ставка — ', 'Minimum bet is ') + money(MIN_BET)); return 0; }
         if (c > wallet.cents) {
-          if (wallet.broke()) offerReset(); else snack('Не хватает денег. Баланс: ' + money(wallet.cents));
+          if (wallet.broke()) offerReset(); else snack(lng('Не хватает денег. Баланс: ', 'Not enough money. Balance: ') + money(wallet.cents));
           return 0;
         }
         if (!wallet.bet(c)) return 0;
@@ -126,34 +126,34 @@
       <div>
         <section class="wallet-hero">
           <div>
-            <div class="label-l">Твой баланс</div>
+            <div class="label-l">${lng('Твой баланс', 'Your balance')}</div>
             <div class="amount" id="lbAmount">${money(wallet.cents)}</div>
             <div class="goal" id="lbGoal"></div>
           </div>
           <div class="side">
-            <button class="btn sl" id="lbReset" hidden><span class="ms">restart_alt</span>Начать с $10</button>
-            <span class="chip assist"><span class="ms">trending_up</span>Пик: ${money(s.peak)}</span>
+            <button class="btn sl" id="lbReset" hidden><span class="ms">restart_alt</span>${lng('Начать с $10', 'Start with $10')}</button>
+            <span class="chip assist"><span class="ms">trending_up</span>${lng('Пик', 'Peak')}: ${money(s.peak)}</span>
           </div>
         </section>
         <div class="grid-cards">${cardsHtml}</div>
-        <h2 class="title-l section-title">Статистика</h2>
+        <h2 class="title-l section-title">${lng('Статистика', 'Stats')}</h2>
         <div class="stat-grid">
-          <div class="stat"><b>${s.bets.toLocaleString('ru-RU')}</b><span>ставок сделано</span></div>
-          <div class="stat"><b>${money(s.wagered)}</b><span>поставлено всего</span></div>
-          <div class="stat"><b>${money(s.best)}</b><span>самый крупный выигрыш</span></div>
-          <div class="stat"><b>${s.resets}</b><span>банкротств</span></div>
+          <div class="stat"><b>${s.bets.toLocaleString(L10N.locale)}</b><span>${lng('ставок сделано', 'bets placed')}</span></div>
+          <div class="stat"><b>${money(s.wagered)}</b><span>${lng('поставлено всего', 'wagered in total')}</span></div>
+          <div class="stat"><b>${money(s.best)}</b><span>${lng('самый крупный выигрыш', 'biggest win')}</span></div>
+          <div class="stat"><b>${s.resets}</b><span>${lng('банкротств', 'bankruptcies')}</span></div>
         </div>
-        <h2 class="title-l section-title">Цели</h2>
-        <div class="body-m muted">Начинаешь с $10. Сможешь раскрутиться до миллиона?</div>
+        <h2 class="title-l section-title">${lng('Цели', 'Goals')}</h2>
+        <div class="body-m muted">${lng('Начинаешь с $10. Сможешь раскрутиться до миллиона?', 'You start with $10. Can you grow it to a million?')}</div>
         <div class="ach">${GOALS.map((g, i) => `<span class="chip assist ${i < s.goals ? 'done' : ''}"><span class="ms">${i < s.goals ? 'check_circle' : 'radio_button_unchecked'}</span>${g.label}</span>`).join('')}</div>
-        <p class="body-s muted" style="margin-top:24px">Это игра на виртуальные доллары. Настоящие деньги здесь не используются и вывести их нельзя.</p>
+        <p class="body-s muted" style="margin-top:24px">${lng('Это игра на виртуальные доллары. Настоящие деньги здесь не используются и вывести их нельзя.', 'This game uses virtual dollars. No real money is used here and nothing can be withdrawn.')}</p>
       </div>`));
 
     const next = GOALS[s.goals];
     const prev = s.goals ? GOALS[s.goals - 1].c : 0;
     $('#lbGoal', body).innerHTML = next
-      ? `<div class="body-m">Следующая цель: <b>${next.label}</b></div><div class="progress"><div style="width:${Math.max(2, Math.min(100, ((wallet.cents - prev) / (next.c - prev)) * 100))}%"></div></div>`
-      : '<div class="body-m"><b>Все цели выполнены. Ты легенда казино 👑</b></div>';
+      ? `<div class="body-m">${lng('Следующая цель', 'Next goal')}: <b>${next.label}</b></div><div class="progress"><div style="width:${Math.max(2, Math.min(100, ((wallet.cents - prev) / (next.c - prev)) * 100))}%"></div></div>`
+      : `<div class="body-m"><b>${lng('Все цели выполнены. Ты легенда казино 👑', 'All goals done. You’re a casino legend 👑')}</b></div>`;
     const rb = $('#lbReset', body);
     rb.hidden = !wallet.broke();
     rb.onclick = () => { wallet.reset(); Beer.rerender(); };
@@ -188,7 +188,7 @@
     },
   };
 
-  casinoRoute('plinko', 'Плинко', (el, sc) => {
+  casinoRoute('plinko', lng('Плинко', 'Plinko'), (el, sc) => {
     let rows = store.get('plinko:rows', 12);
     let risk = store.get('plinko:risk', 'medium');
     const balls = [];
@@ -204,22 +204,22 @@
           <canvas class="plinko-canvas" id="plCanvas"></canvas>
         </div>
         <div class="panel" id="plPanel">
-          <h3>Риск</h3>
+          <h3>${lng('Риск', 'Risk')}</h3>
           <div class="segmented block" id="plRisk">
-            <button data-r="low"><span class="ms">check</span>Низкий</button>
-            <button data-r="medium"><span class="ms">check</span>Средний</button>
-            <button data-r="high"><span class="ms">check</span>Высокий</button>
+            <button data-r="low"><span class="ms">check</span>${lng('Низкий', 'Low')}</button>
+            <button data-r="medium"><span class="ms">check</span>${lng('Средний', 'Medium')}</button>
+            <button data-r="high"><span class="ms">check</span>${lng('Высокий', 'High')}</button>
           </div>
-          <h3>Ряды</h3>
+          <h3>${lng('Ряды', 'Rows')}</h3>
           <div class="segmented block" id="plRows">
             <button data-n="8"><span class="ms">check</span>8</button>
             <button data-n="12"><span class="ms">check</span>12</button>
             <button data-n="16"><span class="ms">check</span>16</button>
           </div>
           <div id="plBet"></div>
-          <button class="btn lg sl" id="plDrop"><span class="ms">arrow_downward</span>Бросить шарик</button>
-          <button class="btn tonal sl" id="plAuto"><span class="ms">repeat</span>Авто ×10</button>
-          <div class="body-m muted">Последний: <span id="plLast">—</span></div>
+          <button class="btn lg sl" id="plDrop"><span class="ms">arrow_downward</span>${lng('Бросить шарик', 'Drop the ball')}</button>
+          <button class="btn tonal sl" id="plAuto"><span class="ms">repeat</span>${lng('Авто ×10', 'Auto ×10')}</button>
+          <div class="body-m muted">${lng('Последний', 'Last')}: <span id="plLast">—</span></div>
         </div>
       </div>`));
     $('#plBet', el).appendChild(bet.el);
@@ -383,11 +383,11 @@
       if (autoLeft) { autoLeft = 0; return; }
       autoLeft = 10;
       const btn = $('#plAuto', el);
-      btn.innerHTML = '<span class="ms">stop</span>Стоп';
+      btn.innerHTML = '<span class="ms">stop</span>' + lng('Стоп', 'Stop');
       const tick = () => {
-        if (!autoLeft || !drop()) { autoLeft = 0; btn.innerHTML = '<span class="ms">repeat</span>Авто ×10'; return; }
+        if (!autoLeft || !drop()) { autoLeft = 0; btn.innerHTML = '<span class="ms">repeat</span>' + lng('Авто ×10', 'Auto ×10'); return; }
         autoLeft--;
-        if (autoLeft) sc.timeout(tick, 280); else btn.innerHTML = '<span class="ms">repeat</span>Авто ×10';
+        if (autoLeft) sc.timeout(tick, 280); else btn.innerHTML = '<span class="ms">repeat</span>' + lng('Авто ×10', 'Auto ×10');
       };
       tick();
     };
@@ -401,7 +401,7 @@
   /* =====================================================
      РАКЕТКА (crash)
      ===================================================== */
-  casinoRoute('crash', 'Ракетка', (el, sc) => {
+  casinoRoute('crash', lng('Ракетка', 'Rocket'), (el, sc) => {
     const K = 0.00014; // скорость роста множителя
     let state = 'idle', crashAt = 1, startT = 0, stake = 0, mult = 1, cashedAt = 0;
     let autoOn = store.get('crash:autoOn', false);
@@ -417,7 +417,7 @@
           <div class="stage crash-stage" style="padding:0">
             <canvas class="crash-canvas" id="crCanvas"></canvas>
             <div class="crash-mult" id="crMult">1.00×</div>
-            <div class="crash-sub" id="crSub">Сделай ставку и запускай ракету 🚀</div>
+            <div class="crash-sub" id="crSub">${lng('Сделай ставку и запускай ракету 🚀', 'Place a bet and launch the rocket 🚀')}</div>
           </div>
         </div>
         <div class="panel">
@@ -425,12 +425,12 @@
           <div class="row nowrap">
             <div class="field" style="flex:1">
               <input type="number" id="crAuto" inputmode="decimal" min="1.01" step="0.1">
-              <label>Автовывод на ×</label>
+              <label>${lng('Автовывод на ×', 'Auto cash out at ×')}</label>
             </div>
-            <button class="icon-btn outlined sl" id="crAutoToggle" title="Автовывод"><span class="ms">bolt</span></button>
+            <button class="icon-btn outlined sl" id="crAutoToggle" title="${lng('Автовывод', 'Auto cash out')}"><span class="ms">bolt</span></button>
           </div>
-          <button class="btn lg sl" id="crGo"><span class="ms">rocket_launch</span>Запуск</button>
-          <div class="body-m muted">Множитель растёт, пока ракета летит. Нажми «Забрать» до взрыва — получишь ставку × множитель. Взорвётся — ставка сгорит.</div>
+          <button class="btn lg sl" id="crGo"><span class="ms">rocket_launch</span>${lng('Запуск', 'Launch')}</button>
+          <div class="body-m muted">${lng('Множитель растёт, пока ракета летит. Нажми «Забрать» до взрыва — получишь ставку × множитель. Взорвётся — ставка сгорит.', 'The multiplier grows while the rocket flies. Hit “Cash out” before it explodes to get bet × multiplier. If it explodes, the bet is gone.')}</div>
         </div>
       </div>`));
     $('#crBet', el).appendChild(bet.el);
@@ -450,7 +450,7 @@
     syncAuto();
 
     function renderHist() {
-      $('#crHist', el).innerHTML = hist.map((m) => `<span class="chip assist ${m >= 2 ? 'hi' : m < 1.2 ? 'lo' : ''}">${m.toFixed(2)}×</span>`).join('') || '<span class="chip assist">Ещё не было запусков</span>';
+      $('#crHist', el).innerHTML = hist.map((m) => `<span class="chip assist ${m >= 2 ? 'hi' : m < 1.2 ? 'lo' : ''}">${m.toFixed(2)}×</span>`).join('') || `<span class="chip assist">${lng('Ещё не было запусков', 'No launches yet')}</span>`;
     }
 
     function resize() {
@@ -465,14 +465,14 @@
     function setBtn() {
       if (state === 'running' && !cashedAt) {
         goBtn.className = 'btn lg tertiary sl';
-        goBtn.innerHTML = `<span class="ms">savings</span>Забрать ${money(Math.floor(stake * mult))}`;
+        goBtn.innerHTML = `<span class="ms">savings</span>${lng('Забрать', 'Cash out')} ${money(Math.floor(stake * mult))}`;
       } else if (state === 'running') {
         goBtn.className = 'btn lg sl'; goBtn.disabled = true;
-        goBtn.innerHTML = '<span class="ms">hourglass_top</span>Ждём взрыва…';
+        goBtn.innerHTML = '<span class="ms">hourglass_top</span>' + lng('Ждём взрыва…', 'Waiting for the boom…');
         return;
       } else {
         goBtn.className = 'btn lg sl';
-        goBtn.innerHTML = '<span class="ms">rocket_launch</span>Запуск';
+        goBtn.innerHTML = '<span class="ms">rocket_launch</span>' + lng('Запуск', 'Launch');
       }
       goBtn.disabled = false;
     }
@@ -486,7 +486,7 @@
       state = 'running'; startT = performance.now(); mult = 1; cashedAt = 0;
       bet.disable(true);
       $('#crMult', el).className = 'crash-mult';
-      $('#crSub', el).textContent = 'Ставка ' + money(stake);
+      $('#crSub', el).textContent = lng('Ставка ', 'Bet ') + money(stake);
       setBtn();
     }
 
@@ -495,7 +495,7 @@
       cashedAt = at;
       const win = Math.floor(stake * at);
       wallet.pay(win, stake);
-      $('#crSub', el).innerHTML = `Забрал на ${at.toFixed(2)}× · ${resultText(win - stake)}`;
+      $('#crSub', el).innerHTML = `${lng('Забрал на', 'Cashed out at')} ${at.toFixed(2)}× · ${resultText(win - stake)}`;
       $('#crMult', el).classList.add('cashed');
       Beer.pop($('.crash-stage', el), '+' + money(win - stake), 'win');
       if (at >= 10) Beer.confetti();
@@ -513,10 +513,10 @@
       m.textContent = crashAt.toFixed(2) + '×';
       if (!cashedAt) {
         m.className = 'crash-mult crashed';
-        $('#crSub', el).innerHTML = `Взорвалась на ${crashAt.toFixed(2)}× · ${resultText(-stake)}`;
+        $('#crSub', el).innerHTML = `${lng('Взорвалась на', 'Exploded at')} ${crashAt.toFixed(2)}× · ${resultText(-stake)}`;
         if (navigator.vibrate) navigator.vibrate([80, 40, 80]);
       } else {
-        $('#crSub', el).innerHTML += ` · улетела до ${crashAt.toFixed(2)}×`;
+        $('#crSub', el).innerHTML += ` · ${lng('улетела до', 'flew up to')} ${crashAt.toFixed(2)}×`;
       }
       bet.disable(false);
       sc.timeout(() => { if (state === 'crashed') state = 'idle'; }, 1200);
@@ -570,7 +570,7 @@
       }
       ctx.textAlign = 'center'; ctx.textBaseline = 'top';
       const stepT = niceStep(tMax / 1000 / 5) * 1000;
-      for (let t = 0; t <= tMax; t += stepT) ctx.fillText(Math.round(t / 1000) + 'с', X(t), H - pad.b + 8);
+      for (let t = 0; t <= tMax; t += stepT) ctx.fillText(Math.round(t / 1000) + lng('с', 's'), X(t), H - pad.b + 8);
 
       if (state !== 'idle' || mult > 1) {
         // кривая
@@ -628,7 +628,7 @@
         if (mult >= crashAt) { mult = crashAt; crash(); }
         else {
           $('#crMult', el).textContent = mult.toFixed(2) + '×';
-          if (!cashedAt) goBtn.innerHTML = `<span class="ms">savings</span>Забрать ${money(Math.floor(stake * mult))}`;
+          if (!cashedAt) goBtn.innerHTML = `<span class="ms">savings</span>${lng('Забрать', 'Cash out')} ${money(Math.floor(stake * mult))}`;
         }
       }
       draw(now);
@@ -671,7 +671,7 @@
     return pair ? SYMBOLS.find((x) => x.s === pair).p2 : 0;
   }
 
-  casinoRoute('slots', 'Слоты', (el, sc) => {
+  casinoRoute('slots', lng('Слоты', 'Slots'), (el, sc) => {
     let spinning = false, auto = false, pending = null;
     let visible = [0, 1, 2].map(() => [randSym(), randSym(), randSym()]); // [reel][row]
 
@@ -686,17 +686,17 @@
               <div class="payline"></div>
             </div>
           </div>
-          <div class="body-l" style="text-align:center;margin-top:12px;min-height:24px" id="slMsg">Крути барабаны!</div>
+          <div class="body-l" style="text-align:center;margin-top:12px;min-height:24px" id="slMsg">${lng('Крути барабаны!', 'Spin the reels!')}</div>
         </div>
         <div class="panel">
           <div id="slBet"></div>
-          <button class="btn lg sl" id="slSpin"><span class="ms">casino</span>Крутить</button>
-          <button class="btn tonal sl" id="slAuto"><span class="ms">autorenew</span>Автоспин</button>
+          <button class="btn lg sl" id="slSpin"><span class="ms">casino</span>${lng('Крутить', 'Spin')}</button>
+          <button class="btn tonal sl" id="slAuto"><span class="ms">autorenew</span>${lng('Автоспин', 'Autospin')}</button>
           <hr class="divider">
-          <h3>Выплаты (×ставка)</h3>
+          <h3>${lng('Выплаты (×ставка)', 'Payouts (×bet)')}</h3>
           <div class="paytable">
             ${SYMBOLS.slice().reverse().map((x) => `<span>${x.s === '7' ? '<b style="color:#e53935">7</b>' : x.s} ${x.s === '7' ? '<b style="color:#e53935">7</b>' : x.s} ${x.s === '7' ? '<b style="color:#e53935">7</b>' : x.s}</span><span>×${x.p3}</span>`).join('')}
-            <span class="muted">Любые два одинаковых</span><span class="muted">×0.5 – ×15</span>
+            <span class="muted">${lng('Любые два одинаковых', 'Any two of a kind')}</span><span class="muted">×0.5 – ×15</span>
           </div>
         </div>
       </div>`));
@@ -720,7 +720,7 @@
       spinning = true;
       machine.classList.remove('won');
       machine.classList.add('spinning');
-      $('#slMsg', el).textContent = 'Крутим…';
+      $('#slMsg', el).textContent = lng('Крутим…', 'Spinning…');
       $('#slSpin', el).disabled = true;
       const result = [0, 1, 2].map(() => [randSym(), randSym(), randSym()]);
       const mult = slotPayout(result.map((r) => r[1]));
@@ -751,10 +751,10 @@
         if (win > 0) {
           machine.classList.add('won');
           $('#slMsg', el).innerHTML = `×${mult} · ${resultText(win - stake)}`;
-          if (mult >= 25) { Beer.confetti(); Beer.pop($('.stage', el), 'ДЖЕКПОТ ×' + mult, 'win'); }
+          if (mult >= 25) { Beer.confetti(); Beer.pop($('.stage', el), lng('ДЖЕКПОТ ×', 'JACKPOT ×') + mult, 'win'); }
           else if (mult >= 1.5) Beer.pop($('.stage', el), '+' + money(win - stake), 'win');
         } else {
-          $('#slMsg', el).innerHTML = `Мимо · ${resultText(-stake)}`;
+          $('#slMsg', el).innerHTML = `${lng('Мимо', 'Miss')} · ${resultText(-stake)}`;
         }
         if (auto) sc.timeout(spin, 450);
         else if (wallet.broke()) sc.timeout(offerReset, 600);
@@ -764,7 +764,7 @@
     function setAuto(on) {
       auto = on;
       const b = $('#slAuto', el);
-      b.innerHTML = on ? '<span class="ms">stop</span>Стоп' : '<span class="ms">autorenew</span>Автоспин';
+      b.innerHTML = on ? '<span class="ms">stop</span>' + lng('Стоп', 'Stop') : '<span class="ms">autorenew</span>' + lng('Автоспин', 'Autospin');
       b.className = on ? 'btn danger sl' : 'btn tonal sl';
     }
     $('#slSpin', el).onclick = spin;
@@ -807,7 +807,7 @@
     return 0;
   }
 
-  casinoRoute('roulette', 'Рулетка', (el, sc) => {
+  casinoRoute('roulette', lng('Рулетка', 'Roulette'), (el, sc) => {
     let chip = store.get('roulette:chip', 100);
     let bets = {};
     let history = [];
@@ -825,22 +825,22 @@
           </div>
           <div class="stack">
             <div>
-              <div class="label-l muted">Ставка на столе</div>
+              <div class="label-l muted">${lng('Ставка на столе', 'Bet on the table')}</div>
               <div class="headline-m tabular" id="rwTotal">$0.00</div>
-              <div class="body-m" id="rwMsg">Выбери фишку и кликай по столу</div>
+              <div class="body-m" id="rwMsg">${lng('Выбери фишку и кликай по столу', 'Pick a chip and click the table')}</div>
             </div>
             <div>
-              <div class="label-m muted" style="margin-bottom:6px">Фишка</div>
+              <div class="label-m muted" style="margin-bottom:6px">${lng('Фишка', 'Chip')}</div>
               <div class="chip-picker" id="rwChips">
                 ${CHIPS.map((c) => `<button data-c="${c.c}" style="background:${c.col}">${c.label}</button>`).join('')}
               </div>
             </div>
             <div class="row">
-              <button class="btn lg sl" id="rwSpin"><span class="ms">motion_photos_on</span>Крутить</button>
-              <button class="icon-btn tonal sl" id="rwUndo" title="Отменить"><span class="ms">undo</span></button>
-              <button class="icon-btn tonal sl" id="rwDouble" title="Удвоить"><span class="ms">exposure_plus_2</span></button>
-              <button class="icon-btn tonal sl" id="rwRepeat" title="Повторить прошлые ставки"><span class="ms">replay</span></button>
-              <button class="icon-btn tonal sl" id="rwClear" title="Очистить"><span class="ms">delete</span></button>
+              <button class="btn lg sl" id="rwSpin"><span class="ms">motion_photos_on</span>${lng('Крутить', 'Spin')}</button>
+              <button class="icon-btn tonal sl" id="rwUndo" title="${lng('Отменить', 'Undo')}"><span class="ms">undo</span></button>
+              <button class="icon-btn tonal sl" id="rwDouble" title="${lng('Удвоить', 'Double')}"><span class="ms">exposure_plus_2</span></button>
+              <button class="icon-btn tonal sl" id="rwRepeat" title="${lng('Повторить прошлые ставки', 'Repeat last bets')}"><span class="ms">replay</span></button>
+              <button class="icon-btn tonal sl" id="rwClear" title="${lng('Очистить', 'Clear')}"><span class="ms">delete</span></button>
             </div>
             <div class="r-hist" id="rwHist"></div>
           </div>
@@ -848,7 +848,7 @@
         <div class="table-scroll">
           <div class="rtable" id="rwTable"></div>
         </div>
-        <div class="body-s muted" style="margin-top:8px">Число ×36 · дюжина/колонка ×3 · цвет, чёт/нечёт, 1–18/19–36 ×2. На зеро внешние ставки проигрывают.</div>
+        <div class="body-s muted" style="margin-top:8px">${lng('Число ×36 · дюжина/колонка ×3 · цвет, чёт/нечёт, 1–18/19–36 ×2. На зеро внешние ставки проигрывают.', 'Number ×36 · dozen/column ×3 · color, even/odd, 1–18/19–36 ×2. Outside bets lose on zero.')}</div>
       </div>`));
 
     // стол
@@ -870,10 +870,10 @@
     }
     add('col3', '2:1', 'out', 14, 1); add('col2', '2:1', 'out', 14, 2); add('col1', '2:1', 'out', 14, 3);
     add('doz1', '1–12', 'out', 2, 4, 4); add('doz2', '13–24', 'out', 6, 4, 4); add('doz3', '25–36', 'out', 10, 4, 4);
-    add('low', '1–18', 'out', 2, 5, 2); add('even', 'Чёт', 'out', 4, 5, 2);
+    add('low', '1–18', 'out', 2, 5, 2); add('even', lng('Чёт', 'Even'), 'out', 4, 5, 2);
     add('red', '<span style="width:18px;height:18px;border-radius:4px;background:#c62828;display:block"></span>', 'out', 6, 5, 2);
     add('black', '<span style="width:18px;height:18px;border-radius:4px;background:#263238;display:block;box-shadow:0 0 0 1px #888"></span>', 'out', 8, 5, 2);
-    add('odd', 'Нечёт', 'out', 10, 5, 2); add('high', '19–36', 'out', 12, 5, 2);
+    add('odd', lng('Нечёт', 'Odd'), 'out', 10, 5, 2); add('high', '19–36', 'out', 12, 5, 2);
 
     const totalBet = () => Object.values(bets).reduce((a, b) => a + b, 0);
 
@@ -895,7 +895,7 @@
     table.addEventListener('click', (e) => {
       const cell = e.target.closest('.rcell');
       if (!cell || spinning) return;
-      if (totalBet() + chip > wallet.cents) { if (wallet.broke() && !totalBet()) offerReset(); else snack('Не хватает денег на эту фишку'); return; }
+      if (totalBet() + chip > wallet.cents) { if (wallet.broke() && !totalBet()) offerReset(); else snack(lng('Не хватает денег на эту фишку', 'Not enough money for this chip')); return; }
       const k = cell.dataset.k;
       bets[k] = (bets[k] || 0) + chip;
       history.push([k, chip]);
@@ -919,15 +919,15 @@
     $('#rwClear', el).onclick = () => { if (spinning) return; bets = {}; history = []; renderBets(); };
     $('#rwDouble', el).onclick = () => {
       if (spinning) return;
-      if (totalBet() * 2 > wallet.cents) return snack('Не хватает денег, чтобы удвоить');
+      if (totalBet() * 2 > wallet.cents) return snack(lng('Не хватает денег, чтобы удвоить', 'Not enough money to double'));
       Object.keys(bets).forEach((k) => { history.push([k, bets[k]]); bets[k] *= 2; });
       renderBets();
     };
     $('#rwRepeat', el).onclick = () => {
       if (spinning) return;
       const sum = Object.values(lastBets).reduce((a, b) => a + b, 0);
-      if (!sum) return snack('Прошлых ставок нет');
-      if (sum > wallet.cents) return snack('Не хватает денег на прошлые ставки');
+      if (!sum) return snack(lng('Прошлых ставок нет', 'No previous bets'));
+      if (sum > wallet.cents) return snack(lng('Не хватает денег на прошлые ставки', 'Not enough money for the previous bets'));
       bets = { ...lastBets }; history = Object.entries(bets);
       renderBets();
     };
@@ -970,15 +970,15 @@
     $('#rwSpin', el).onclick = () => {
       if (spinning) return;
       const total = totalBet();
-      if (!total) return snack('Сначала сделай ставку — кликни по столу');
-      if (!wallet.bet(total)) return snack('Не хватает денег');
+      if (!total) return snack(lng('Сначала сделай ставку — кликни по столу', 'Place a bet first — click the table'));
+      if (!wallet.bet(total)) return snack(lng('Не хватает денег', 'Not enough money'));
       spinning = true;
       lastBets = { ...bets }; store.set('roulette:last', lastBets);
       $('#rwSpin', el).disabled = true;
       $$('.win-cell', el).forEach((c) => c.classList.remove('win-cell'));
       const center = $('#rwCenter', el);
       center.className = 'wheel-center'; center.textContent = '…';
-      $('#rwMsg', el).textContent = 'Ставки сделаны, ставок больше нет!';
+      $('#rwMsg', el).textContent = lng('Ставки сделаны, ставок больше нет!', 'No more bets!');
 
       const n = WHEEL[Beer.randInt(37)];
       const idx = WHEEL.indexOf(n);
@@ -1003,8 +1003,8 @@
         renderHist();
         cells.forEach((c) => { if (betWins(c.dataset.k, n)) c.classList.add('win-cell'); });
         const net = ret - total;
-        const colorName = { red: 'красное', black: 'чёрное', green: 'зеро' }[colorOf(n)];
-        $('#rwMsg', el).innerHTML = `Выпало <b>${n}</b> (${colorName}) · ${resultText(net)}`;
+        const colorName = lng({ red: 'красное', black: 'чёрное', green: 'зеро' }, { red: 'red', black: 'black', green: 'zero' })[colorOf(n)];
+        $('#rwMsg', el).innerHTML = `${lng('Выпало', 'It’s')} <b>${n}</b> (${colorName}) · ${resultText(net)}`;
         if (net > 0) Beer.pop($('.stage', el), '+' + money(net), 'win');
         if (net >= total * 10) Beer.confetti();
         // ставки остаются на столе, но если денег на них уже нет — убираем

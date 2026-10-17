@@ -1,4 +1,6 @@
 'use strict';
+// без lang.js (старая страница из кэша) — всё по-русски
+if (!window.L10N) { window.lng = (ru) => ru; window.L10N = { lang: 'ru', en: false, locale: 'ru-RU', apply() {}, set() {} }; }
 /* =========================================================
    Ядро: хранилище, утилиты, снекбар, диалоги, роутинг-реестр
    ========================================================= */
@@ -65,7 +67,7 @@ Beer.pickWeighted = (items, weightOf) => {
 const SUFFIXES = ['', 'K', 'M', 'B', 'T', 'Qa', 'Qi', 'Sx', 'Sp', 'Oc', 'No', 'Dc'];
 Beer.fmt = (n) => {
   if (!isFinite(n)) return '∞';
-  if (Math.abs(n) < 1000) return (Math.round(n * 10) / 10).toLocaleString('ru-RU');
+  if (Math.abs(n) < 1000) return (Math.round(n * 10) / 10).toLocaleString(L10N.locale);
   let i = 0;
   while (Math.abs(n) >= 1000 && i < SUFFIXES.length - 1) { n /= 1000; i++; }
   return n.toFixed(n < 10 ? 2 : n < 100 ? 1 : 0) + SUFFIXES[i];
