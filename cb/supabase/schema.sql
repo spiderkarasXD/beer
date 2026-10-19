@@ -57,7 +57,9 @@ drop materialized view if exists public.leaderboard;
 create materialized view public.leaderboard as
   select nick, avatar_url, peak, balance, false as pinned from public.profiles
   union all
-  select nick, avatar_url, net_worth as peak, net_worth as balance, true as pinned from public.pinned_leaders
+  select p.nick, p.avatar_url, p.net_worth as peak, p.net_worth as balance, true as pinned
+    from public.pinned_leaders p
+   where not exists (select 1 from public.profiles r where lower(r.nick) = lower(p.nick)) -- есть настоящий аккаунт → закреплённая копия не нужна
   order by peak desc
   limit 50;
 grant select on public.leaderboard to anon, authenticated;
