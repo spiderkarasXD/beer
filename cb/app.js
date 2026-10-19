@@ -866,8 +866,10 @@
 
   // ---------- профиль ----------
   // ---------- лидерборд ----------
-  // Пока занято только первое место.
-  const LEADERS = [{ name: 'kryon', sum: 5630719 }];
+  const LEADERS = [
+    { name: 'kryon', sum: 10912131, ava: 'img/ava-kryon.jpg' },
+    { name: 'spiderkaras', sum: 6537211, ava: 'img/ava-spiderkaras.jpg' },
+  ];
   function pageLeaders(el) {
     const SLOTS = 10;
     const mine = S.balance + S.inv.reduce((a, it) => a + SKIN[it.id].price, 0);
@@ -875,7 +877,7 @@
       const p = LEADERS[i];
       const medal = ['🥇', '🥈', '🥉'][i] || `#${i + 1}`;
       return p
-        ? `<div class="lb-row taken place-${i + 1}"><span class="lb-pos">${medal}</span><span class="lb-ava">${esc(p.name[0].toUpperCase())}</span><b class="lb-nm">${esc(p.name)}</b><span class="lb-sum">${rub(p.sum)}</span></div>`
+        ? `<div class="lb-row taken place-${i + 1}"><span class="lb-pos">${medal}</span><span class="lb-ava">${p.ava ? `<img src="${p.ava}" alt="">` : esc(p.name[0].toUpperCase())}</span><b class="lb-nm">${esc(p.name)}</b><span class="lb-sum">${rub(p.sum)}</span></div>`
         : `<div class="lb-row empty"><span class="lb-pos">${medal}</span><span class="lb-ava">?</span><span class="lb-nm muted">${lng('Свободно', 'Free spot')}</span><span class="lb-sum muted">—</span></div>`;
     };
     const top = LEADERS[0];
