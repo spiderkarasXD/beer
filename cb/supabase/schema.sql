@@ -93,6 +93,11 @@ values ('avatars', 'avatars', true, 2097152, array['image/jpeg', 'image/png', 'i
 on conflict (id) do update set public = true, file_size_limit = 2097152, allowed_mime_types = excluded.allowed_mime_types;
 
 -- игрок может загружать и менять только файлы в своей папке avatars/<uid>/...
+-- чтение нужно и для публичных ссылок, и для загрузки с перезаписью (upsert):
+-- без SELECT-политики Postgres отвечает «new row violates row-level security policy»
+drop policy if exists "avatars: select" on storage.objects;
+create policy "avatars: select" on storage.objects for select to anon, authenticated
+  using (bucket_id = 'avatars');
 drop policy if exists "avatars: insert own" on storage.objects;
 create policy "avatars: insert own" on storage.objects for insert to authenticated
   with check (bucket_id = 'avatars' and (storage.foldername(name))[1] = auth.uid()::text);
