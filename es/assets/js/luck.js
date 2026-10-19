@@ -690,7 +690,7 @@
         </div>
         <div class="panel">
           <div id="slBet"></div>
-          <button class="btn lg sl" id="slSpin"><span class="ms">stars</span>Крутить</button>
+          <button class="btn lg sl" id="slSpin"><span class="ms">replay</span>Крутить</button>
           <button class="btn tonal sl" id="slAuto"><span class="ms">autorenew</span>Автоспин</button>
           <hr class="divider">
           <h3>Выплаты (×взноса)</h3>
