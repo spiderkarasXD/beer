@@ -557,3 +557,10 @@ img.case-img { object-fit: contain; display: block; }
 /* клик по логотипу (пасхалка) не должен оставлять рамку и выделять текст */
 .logo { outline: none; -webkit-user-select: none; user-select: none; }
 .logo:focus-visible { outline: 2px solid var(--yellow); outline-offset: 4px; border-radius: 6px; }
+
+.lb-ava { overflow: hidden; }
+.lb-ava img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.lb-row.place-2 { background: linear-gradient(90deg, rgba(200, 210, 230, .12), var(--panel) 70%); border-color: rgba(200, 210, 230, .45); }
+.lb-row.place-2 .lb-ava { width: 46px; height: 46px; box-shadow: 0 0 0 3px rgba(200, 210, 230, .3); }
+.lb-row.place-2 .lb-nm { font-weight: 700; color: #dfe5f2; }
+.lb-row.place-2 .lb-sum { color: #dfe5f2; font-size: 26px; }
