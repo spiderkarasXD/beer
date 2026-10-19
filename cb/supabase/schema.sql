@@ -52,9 +52,16 @@ insert into public.pinned_leaders (nick, avatar_url, net_worth) values
   ('spiderkaras', 'img/ava-spiderkaras.jpg',  6537211)
 on conflict (nick) do update set avatar_url = excluded.avatar_url, net_worth = excluded.net_worth;
 
--- ---------- топ по пику денег: пересчитывается раз в 5 минут ----------
-drop materialized view if exists public.leaderboard;
-create materialized view public.leaderboard as
+-- ---------- топ по пику денег ----------
+-- Обычное представление (view): всегда показывает актуальные данные, обновлять руками не нужно.
+-- (Раньше это была materialized view с пересчётом раз в 5 минут — её убираем.)
+do $$ begin
+  if exists (select 1 from pg_matviews where schemaname = 'public' and matviewname = 'leaderboard') then
+    drop materialized view public.leaderboard;
+  end if;
+end $$;
+
+create or replace view public.leaderboard as
   select nick, avatar_url, peak, balance, false as pinned from public.profiles
   union all
   select p.nick, p.avatar_url, p.net_worth as peak, p.net_worth as balance, true as pinned
@@ -63,10 +70,11 @@ create materialized view public.leaderboard as
   order by peak desc
   limit 50;
 grant select on public.leaderboard to anon, authenticated;
+create index if not exists profiles_peak_idx on public.profiles (peak desc);
 
 create extension if not exists pg_cron;
+-- старая задача пересчёта больше не нужна
 select cron.unschedule(jobid) from cron.job where jobname = 'casebeer-refresh-top';
-select cron.schedule('casebeer-refresh-top', '*/5 * * * *', 'refresh materialized view public.leaderboard');
 
 -- ---------- реальные дропы для ленты ----------
 create table if not exists public.drops (
@@ -118,5 +126,3 @@ language sql security definer set search_path = public stable as $$
 $$;
 grant execute on function public.nick_taken(text) to anon, authenticated;
 
--- первый расчёт топа
-refresh materialized view public.leaderboard;
