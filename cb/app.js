@@ -98,6 +98,7 @@
     bolt: '<path fill="currentColor" d="M13 2 4 14h6l-1 8 9-12h-6z"/>',
     sort: '<path fill="currentColor" d="M3 6h10v2H3zm0 5h7v2H3zm0 5h4v2H3zm14-10v10.2l2.6-2.6L21 15l-5 5-5-5 1.4-1.4 2.6 2.6V6z"/>',
     search: '<path fill="currentColor" d="M10 3a7 7 0 0 1 5.6 11.2l5.1 5.1-1.4 1.4-5.1-5.1A7 7 0 1 1 10 3m0 2a5 5 0 1 0 0 10 5 5 0 0 0 0-10"/>',
+    trophy: '<path fill="currentColor" d="M7 3h10v2h4v3a4 4 0 0 1-4 4h-.4A5 5 0 0 1 13 14.9V17h3v2H8v-2h3v-2.1A5 5 0 0 1 7.4 12H7a4 4 0 0 1-4-4V5h4zm0 4H5v1a2 2 0 0 0 2 2zm10 0v3a2 2 0 0 0 2-2V7z"/>',
     box: '<path fill="currentColor" d="M4 4h16v4H4zm1 5h14v11H5zm4 2v2h6v-2z"/>',
   };
   const icon = (k, cls = '') => `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true">${ICON[k]}</svg>`;
@@ -864,6 +865,31 @@
   }
 
   // ---------- профиль ----------
+  // ---------- лидерборд ----------
+  // Пока занято только первое место.
+  const LEADERS = [{ name: 'kryon', sum: 5630719 }];
+  function pageLeaders(el) {
+    const SLOTS = 10;
+    const mine = S.balance + S.inv.reduce((a, it) => a + SKIN[it.id].price, 0);
+    const row = (i) => {
+      const p = LEADERS[i];
+      const medal = ['🥇', '🥈', '🥉'][i] || `#${i + 1}`;
+      return p
+        ? `<div class="lb-row taken place-${i + 1}"><span class="lb-pos">${medal}</span><span class="lb-ava">${esc(p.name[0].toUpperCase())}</span><b class="lb-nm">${esc(p.name)}</b><span class="lb-sum">${rub(p.sum)}</span></div>`
+        : `<div class="lb-row empty"><span class="lb-pos">${medal}</span><span class="lb-ava">?</span><span class="lb-nm muted">${lng('Свободно', 'Free spot')}</span><span class="lb-sum muted">—</span></div>`;
+    };
+    const top = LEADERS[0];
+    el.innerHTML = `
+      <div class="h1">${icon('trophy')}${lng('Лидеры', 'Leaderboard')}</div>
+      <div class="lb">${Array.from({ length: SLOTS }, (_, i) => row(i)).join('')}</div>
+      <div class="panel lb-me">
+        <span class="lb-ava me">${esc(S.nick[0].toUpperCase())}</span>
+        <div style="flex:1;min-width:0"><b>${esc(S.nick)}</b><div class="muted" style="font-size:13px">${lng('Баланс + инвентарь', 'Balance + inventory')}</div></div>
+        <div style="text-align:right"><div class="cond" style="font-size:24px;color:var(--yellow)">${rub(mine)}</div>
+        <div class="muted" style="font-size:12px">${mine >= top.sum ? lng('Ты богаче, чем kryon 👀', 'You are richer than kryon 👀') : lng('До 1 места: ', 'To 1st place: ') + rub(top.sum - mine)}</div></div>
+      </div>`;
+  }
+
   function pageProfile(el) {
     const render = () => {
       const invSum = S.inv.reduce((s, it) => s + SKIN[it.id].price, 0);
@@ -946,7 +972,7 @@
   }
 
   /* ---------------- шапка и роутер ---------------- */
-  const NAV = [['cases', '#/', lng('Кейсы', 'Cases')], ['upgrade', '#/upgrade', lng('Апгрейд', 'Upgrade')], ['battles', '#/battles', lng('Батлы', 'Battles')], ['contracts', '#/contracts', lng('Контракты', 'Contracts')]];
+  const NAV = [['cases', '#/', lng('Кейсы', 'Cases')], ['upgrade', '#/upgrade', lng('Апгрейд', 'Upgrade')], ['battles', '#/battles', lng('Батлы', 'Battles')], ['contracts', '#/contracts', lng('Контракты', 'Contracts')], ['leaders', '#/leaders', lng('Лидеры', 'Leaders')]];
   function header() {
     $('#nav').innerHTML = NAV.map(([k, href, label]) => `<a href="${href}" data-k="${k}">${icon(k)}${label}</a>`).join('');
     $('#mnav').innerHTML = [...NAV, ['profile', '#/profile', lng('Профиль', 'Profile')]].map(([k, href, label]) => `<a href="${href}" data-k="${k}">${icon(k)}${label}</a>`).join('');
@@ -964,7 +990,7 @@
     const [name, arg] = path.split('/');
     const el = $('#page');
     el.innerHTML = '';
-    const active = { '': 'cases', case: 'cases', upgrade: 'upgrade', battles: 'battles', battle: 'battles', contracts: 'contracts', profile: 'profile' }[name || ''] || 'cases';
+    const active = { '': 'cases', case: 'cases', upgrade: 'upgrade', battles: 'battles', battle: 'battles', contracts: 'contracts', profile: 'profile', leaders: 'leaders' }[name || ''] || 'cases';
     $$('[data-k]').forEach((a) => a.classList.toggle('active', a.dataset.k === active));
     try {
       if (name === 'case') pageCase(el, arg);
@@ -973,6 +999,7 @@
       else if (name === 'battle') pageBattle(el);
       else if (name === 'contracts') pageContracts(el);
       else if (name === 'profile') pageProfile(el);
+      else if (name === 'leaders') pageLeaders(el);
       else pageHome(el);
     } catch (e) {
       console.error(e);
