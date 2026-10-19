@@ -553,3 +553,7 @@ img.case-img { object-fit: contain; display: block; }
 .lb-row.place-1 .lb-sum { font-size: 30px; color: var(--yellow); }
 .lb-me { display: flex; align-items: center; gap: 14px; max-width: 760px; margin: 18px auto 0; }
 @media (max-width: 600px) { .lb-row { grid-template-columns: 34px 36px 1fr auto; gap: 8px; padding: 10px 12px; } .lb-sum { font-size: 17px; } .lb-row.place-1 .lb-sum { font-size: 20px; } }
+
+/* клик по логотипу (пасхалка) не должен оставлять рамку и выделять текст */
+.logo { outline: none; -webkit-user-select: none; user-select: none; }
+.logo:focus-visible { outline: 2px solid var(--yellow); outline-offset: 4px; border-radius: 6px; }
