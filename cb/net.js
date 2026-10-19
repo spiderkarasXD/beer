@@ -34,7 +34,7 @@ window.CB_NET = (() => {
     if (body !== undefined && !raw) h['Content-Type'] = 'application/json';
     let res;
     try {
-      res = await fetch(URL_ + path, { method, headers: h, body: body === undefined ? undefined : raw ? body : JSON.stringify(body) });
+      res = await fetch(URL_ + path, { method, cache: 'no-store', headers: h, body: body === undefined ? undefined : raw ? body : JSON.stringify(body) });
     } catch (e) { throw new NetError('offline'); }
     const text = await res.text();
     let data = null;
