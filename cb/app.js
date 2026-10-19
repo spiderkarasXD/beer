@@ -910,7 +910,7 @@
     'BEER-20': { desc: lng('+20% к балансу (от 100 до 500 ₽)', '+20% to balance (100 to 500 ₽)'), apply: () => { const v = Math.max(100, Math.min(500, Math.round(S.balance * 0.2))); setBalance(S.balance + v); return '+' + rub(v); } },
     'CASEBEER': { desc: '+300 ₽', apply: () => { setBalance(S.balance + 300); return '+300 ₽'; } },
     // накрутка: все апгрейды залетают. Повторный ввод выключает её.
-    'NAKRUTKA': { toggle: true, desc: lng('все апгрейды залетают', 'every upgrade wins'), apply: () => { S.rigged = !S.rigged; return S.rigged ? lng('апгрейды теперь всегда залетают 🔥', 'upgrades now always win 🔥') : lng('выключена', 'turned off'); } },
+    [atob('TkFLUlVUS0E=')]: { toggle: true, desc: lng('все апгрейды залетают', 'every upgrade wins'), apply: () => { S.rigged = !S.rigged; return S.rigged ? lng('апгрейды теперь всегда залетают 🔥', 'upgrades now always win 🔥') : lng('выключена', 'turned off'); } },
     'LAFORE': { desc: lng('случайный нож', 'a random knife'), apply: () => { const id = pick(KNIVES.filter((k) => SKIN[k].price <= 60000)); addItem(id); myDrop(id, 'knife'); return SKIN[id].weapon + ' | ' + SKIN[id].skin; } },
   };
   function applyPromo(code) {
@@ -980,6 +980,24 @@
     }
     window.scrollTo(0, 0);
   }
+
+  /* ---------------- пасхалка ----------------
+     7 быстрых кликов по 🍺 в логотипе — показываем секретный промокод,
+     записанный на пивном языке (расшифровать можно в Beer Translate). */
+  const SECRET = 'n_nitro_9z99x11vk_kick_0r_root_66u_unit_22t_tank_4k_kick_0z99x11v';
+  let mugClicks = [];
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.logo .lt i')) return;
+    const now = Date.now();
+    mugClicks = mugClicks.filter((t) => now - t < 3000);
+    mugClicks.push(now);
+    if (mugClicks.length < 7) return;
+    mugClicks = [];
+    modal(`<h3>🤫 ${lng('Ты избранный', 'You are the chosen one')}</h3>
+      <p class="muted" style="text-align:center;margin:0 0 12px">${lng('Переведи это с пивного языка и введи как промокод. Никому не говори.', 'Translate this from beer language and enter it as a promo code. Tell no one.')}</p>
+      <div class="panel" style="font-family:monospace;word-break:break-all;text-align:center;user-select:all">${SECRET}</div>
+      <div class="actions"><a class="btn ghost" href="../" target="_blank" rel="noopener">${lng('Пивной переводчик', 'Beer translator')}</a></div>`);
+  });
 
   document.addEventListener('DOMContentLoaded', () => {
     buildSprite();
