@@ -44,7 +44,27 @@
   if (!S.cashback) S.cashback = 0;
   if (!SKIN[S.st.bestId]) S.st.bestId = null;
   S.inv = S.inv.filter((x) => SKIN[x.id]); // скины, которых больше нет в каталоге
-  const save = () => store.set('state', S);
+  const NET = window.CB_NET || null;
+  const invValue = () => S.inv.reduce((a, it) => a + (SKIN[it.id] ? SKIN[it.id].price : 0), 0);
+  const save = () => {
+    if ((S.st.peak || 0) < S.balance) S.st.peak = S.balance; // пик денег
+    store.set('state', S);
+    if (NET && NET.loggedIn) NET.queueSave(S, S.balance + invValue(), S.balance);
+  };
+  const freshState = () => ({
+    balance: 1000, inv: [], freeAt: 0, bonusAt: 0, promos: [], cashback: 0, fast: S.fast,
+    st: { opened: 0, spent: 0, best: 0, bestId: null, upg: 0, upgWin: 0, battles: 0, battleWin: 0, contracts: 0, peak: 1000 },
+  });
+  // профиль из облака → в текущее состояние
+  function applyCloud(row) {
+    const st = row.state || {};
+    for (const k of Object.keys(S)) if (!(k in st) && k !== 'nick' && k !== 'fast') delete S[k];
+    Object.assign(S, freshState(), st);
+    S.inv = (S.inv || []).filter((x) => SKIN[x.id]);
+    S.nick = row.nick;
+    S.avatar = row.avatar_url || null;
+    store.set('state', S);
+  }
 
   function setBalance(v) {
     const old = S.balance;
@@ -219,7 +239,7 @@
   const showInFeed = (d) => feedTab === 'all' || SKIN[d.id].price >= 1000;
   function dropHtml(d) {
     const s = SKIN[d.id];
-    return `<a class="drop ${d.mine ? 'mine' : ''}" href="#/case/${d.caseId}" style="--rc:${RARITY[s.rarity].color}">
+    return `<a class="drop ${d.mine ? 'mine' : ''} ${d.real ? 'real' : ''}" href="#/case/${d.caseId}" style="--rc:${RARITY[s.rarity].color}">${d.real ? '<span class="live-tag">LIVE</span>' : ''}
       ${pic(d.id)}
       <div class="dn">${esc(s.weapon)}<b>${esc(s.skin)}</b></div>
       <div class="who"><span>${esc(CASE[d.caseId] ? CASE[d.caseId].name : '')}</span><b>${esc(d.user)}</b><span>${rub(s.price)}</span></div>
@@ -237,7 +257,24 @@
     $('#drops').innerHTML = FEED.filter(showInFeed).slice(0, 24).map(dropHtml).join('');
     $$('.side-tabs button').forEach((b) => b.classList.toggle('on', b.dataset.t === feedTab));
   }
-  const myDrop = (id, caseId) => pushDrop({ user: S.nick, id, caseId, mine: true });
+  const myDrop = (id, caseId) => {
+    pushDrop({ user: S.nick, id, caseId, mine: true });
+    if (NET && NET.loggedIn) NET.postDrop(S.nick, id, caseId);
+  };
+  // реальные дропы игроков из базы: подтягиваем каждые 8 секунд
+  let lastDropId = 0;
+  async function pollRealDrops(first) {
+    if (!NET) return;
+    try {
+      const rows = await NET.recentDrops(lastDropId, first ? 10 : 30);
+      if (!rows || !rows.length) return;
+      lastDropId = Math.max(lastDropId, ...rows.map((r) => r.id));
+      rows.reverse().forEach((r) => {
+        if (!SKIN[r.skin_id] || r.user_id === NET.uid) return; // свои уже показаны
+        pushDrop({ user: r.nick, id: r.skin_id, caseId: r.case_id, real: true });
+      });
+    } catch (e) { /* нет сети — живём на ботах */ }
+  }
   function startFeed() {
     for (let i = 0; i < 40; i++) FEED.push(fakeDrop());
     // в «Топ» сразу должно что-то быть
@@ -246,6 +283,8 @@
     $$('.side-tabs button').forEach((b) => (b.onclick = () => { feedTab = b.dataset.t; renderFeed(); }));
     const loop = () => { pushDrop(fakeDrop()); setTimeout(loop, 1300 + rand() * 2600); };
     setTimeout(loop, 1500);
+    pollRealDrops(true);
+    setInterval(() => pollRealDrops(false), 8000);
     let online = 6100 + randInt(800);
     const upd = () => {
       online = Math.max(4000, online + randInt(41) - 20);
@@ -870,34 +909,134 @@
     { name: 'kryon', sum: 10912131, ava: 'img/ava-kryon.jpg' },
     { name: 'spiderkaras', sum: 6537211, ava: 'img/ava-spiderkaras.jpg' },
   ];
+  const avaHtml = (url, nick) => (url ? `<img src="${esc(url)}" alt="" onerror="this.remove()">` : '') + esc((nick || '?')[0].toUpperCase());
   function pageLeaders(el) {
-    const SLOTS = 10;
-    const mine = S.balance + S.inv.reduce((a, it) => a + SKIN[it.id].price, 0);
-    const row = (i) => {
-      const p = LEADERS[i];
-      const medal = ['🥇', '🥈', '🥉'][i] || `#${i + 1}`;
-      return p
-        ? `<div class="lb-row taken place-${i + 1}"><span class="lb-pos">${medal}</span><span class="lb-ava">${p.ava ? `<img src="${p.ava}" alt="">` : esc(p.name[0].toUpperCase())}</span><b class="lb-nm">${esc(p.name)}</b><span class="lb-sum">${rub(p.sum)}</span></div>`
-        : `<div class="lb-row empty"><span class="lb-pos">${medal}</span><span class="lb-ava">?</span><span class="lb-nm muted">${lng('Свободно', 'Free spot')}</span><span class="lb-sum muted">—</span></div>`;
+    const SLOTS = 10, EVERY = 5 * 60e3;
+    let rows = null, live = false, nextAt = 0;
+    const myPeak = () => Math.max(S.st.peak || 0, S.balance);
+    function render() {
+      const list = rows || LEADERS.map((p) => ({ nick: p.name, avatar_url: p.ava, peak: p.sum, pinned: true }));
+      const row = (i) => {
+        const p = list[i];
+        const medal = ['🥇', '🥈', '🥉'][i] || `#${i + 1}`;
+        if (!p) return `<div class="lb-row empty"><span class="lb-pos">${medal}</span><span class="lb-ava">?</span><span class="lb-nm muted">${lng('Свободно', 'Free spot')}</span><span class="lb-sum muted">—</span></div>`;
+        const me = NET && NET.loggedIn && p.nick === S.nick && !p.pinned;
+        return `<div class="lb-row taken place-${i + 1} ${me ? 'me' : ''}"><span class="lb-pos">${medal}</span><span class="lb-ava">${avaHtml(p.avatar_url, p.nick)}</span><b class="lb-nm">${esc(p.nick)}${me ? ` <small class="muted">(${lng('ты', 'you')})</small>` : ''}</b><span class="lb-sum">${rub(p.peak)}</span></div>`;
+      };
+      const top = list[0] || { nick: '—', peak: 0 };
+      const mp = myPeak();
+      el.innerHTML = `
+        <div class="h1">${icon('trophy')}${lng('Лидеры', 'Leaderboard')}</div>
+        <div class="lb-note muted">${lng('Рейтинг по пику денег на счету', 'Ranked by peak balance')}${live ? ` · ${lng('обновление через', 'refresh in')} <b id="lbT"></b>` : ` · ${lng('офлайн-версия', 'offline copy')}`}</div>
+        <div class="lb">${Array.from({ length: SLOTS }, (_, i) => row(i)).join('')}</div>
+        <div class="panel lb-me">
+          <span class="lb-ava me">${avaHtml(S.avatar, S.nick)}</span>
+          <div style="flex:1;min-width:0"><b>${esc(S.nick)}</b><div class="muted" style="font-size:13px">${lng('Твой пик денег', 'Your peak balance')}${NET && NET.loggedIn ? '' : ` · <a href="#/profile">${lng('войди, чтобы попасть в топ', 'log in to get on the board')}</a>`}</div></div>
+          <div style="text-align:right"><div class="cond" style="font-size:24px;color:var(--yellow)">${rub(mp)}</div>
+          <div class="muted" style="font-size:12px">${mp >= top.peak ? lng('Ты на вершине 👑', 'You are on top 👑') : lng('До 1 места: ', 'To 1st place: ') + rub(top.peak - mp)}</div></div>
+        </div>`;
+      tick();
+    }
+    function tick() { const t = $('#lbT', el); if (t) t.textContent = clock(Math.max(0, nextAt - Date.now())).slice(3); }
+    async function load() {
+      nextAt = Date.now() + EVERY;
+      if (NET) {
+        try { rows = await NET.leaderboard(SLOTS); live = true; } catch (e) { live = false; }
+      }
+      render();
+    }
+    render();
+    load();
+    const t1 = setInterval(load, EVERY), t2 = setInterval(tick, 1000);
+    onLeave(() => { clearInterval(t1); clearInterval(t2); });
+  }
+
+  const netMsg = (e) => {
+    const m = String(e && e.message || '');
+    if (e && e.status === 404) return lng('База ещё не настроена — нужно запустить cb/supabase/schema.sql в Supabase', 'The database is not set up yet — run cb/supabase/schema.sql in Supabase');
+    if (m === 'offline') return lng('Сервер недоступен — проверь интернет', 'Server unreachable — check your connection');
+    if (m === 'nick_taken') return lng('Этот ник уже занят', 'This nickname is taken');
+    if (m === 'confirm_email_on') return lng('В Supabase включено подтверждение почты — выключи его (Authentication → Sign In / Providers → Email → Confirm email)', 'Email confirmation is on in Supabase — turn it off');
+    if (/invalid login credentials/i.test(m)) return lng('Неверный ник или пароль', 'Wrong nickname or password');
+    if (/already registered/i.test(m)) return lng('Такой аккаунт уже есть — войди', 'This account already exists — log in');
+    if (/password/i.test(m)) return lng('Пароль слишком простой (минимум 6 символов)', 'Password is too weak (6+ characters)');
+    return m;
+  };
+  function accountPanel() {
+    if (!NET) return '';
+    if (!NET.loggedIn) {
+      return `<div class="panel acc-panel"><div style="flex:1;min-width:220px"><b class="cond" style="font-size:20px">${lng('Аккаунт', 'Account')}</b>
+        <div class="muted">${lng('Войди или зарегистрируйся — инвентарь сохранится на сервере, а ты попадёшь в топ и ленту дропов.', 'Log in or sign up — your inventory is saved on the server and you get on the leaderboard and the drop feed.')}</div></div>
+        <button class="btn" id="accLogin">${lng('Войти / Регистрация', 'Log in / Sign up')}</button></div>`;
+    }
+    return `<div class="panel acc-panel"><div style="flex:1;min-width:220px"><b class="cond" style="font-size:20px">${lng('Аккаунт', 'Account')}</b>
+      <div class="muted" style="font-size:12px;word-break:break-all">UID: ${esc(NET.uid)}</div>
+      <div class="muted" style="font-size:12px">${lng('Прогресс сохраняется на сервере автоматически', 'Progress is saved to the server automatically')}</div></div>
+      <label class="btn ghost" style="cursor:pointer">${lng('Загрузить аватарку', 'Upload avatar')}<input type="file" id="accAva" accept="image/png,image/jpeg,image/webp" hidden></label>
+      <button class="btn red sm" id="accOut">${lng('Выйти', 'Log out')}</button></div>`;
+  }
+  function bindAccount(el, rerender) {
+    const li = $('#accLogin', el); if (li) li.onclick = () => openAuth();
+    const out = $('#accOut', el);
+    if (out) out.onclick = async () => { await NET.flush(); await NET.signOut(); Object.assign(S, freshState()); S.avatar = null; S.nick = lng('Игрок', 'Player') + (1000 + randInt(9000)); save(); header(); rerender(); toast(lng('Ты вышел из аккаунта', 'Logged out')); };
+    const av = $('#accAva', el);
+    if (av) av.onchange = async () => {
+      const f = av.files[0]; if (!f) return;
+      if (f.size > 8 * 1024 * 1024) return toast(lng('Файл слишком большой (до 8 МБ)', 'File too large (8 MB max)'), 'bad');
+      try { S.avatar = await NET.uploadAvatar(f); save(); header(); rerender(); toast(lng('Аватарка обновлена', 'Avatar updated'), 'good'); }
+      catch (e) { toast(netMsg(e), 'bad'); }
     };
-    const top = LEADERS[0];
-    el.innerHTML = `
-      <div class="h1">${icon('trophy')}${lng('Лидеры', 'Leaderboard')}</div>
-      <div class="lb">${Array.from({ length: SLOTS }, (_, i) => row(i)).join('')}</div>
-      <div class="panel lb-me">
-        <span class="lb-ava me">${esc(S.nick[0].toUpperCase())}</span>
-        <div style="flex:1;min-width:0"><b>${esc(S.nick)}</b><div class="muted" style="font-size:13px">${lng('Баланс + инвентарь', 'Balance + inventory')}</div></div>
-        <div style="text-align:right"><div class="cond" style="font-size:24px;color:var(--yellow)">${rub(mine)}</div>
-        <div class="muted" style="font-size:12px">${mine >= top.sum ? lng('Ты богаче, чем kryon 👀', 'You are richer than kryon 👀') : lng('До 1 места: ', 'To 1st place: ') + rub(top.sum - mine)}</div></div>
-      </div>`;
+  }
+  function openAuth() {
+    let mode = 'login';
+    modal(`<h3 id="authT"></h3>
+      <div class="seg" id="authSeg" style="display:flex;margin:0 auto 14px;width:fit-content"><button data-m="login">${lng('Вход', 'Log in')}</button><button data-m="reg">${lng('Регистрация', 'Sign up')}</button></div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <input class="input" id="authNick" maxlength="20" placeholder="${lng('Ник', 'Nickname')}" autocomplete="username" value="${esc(/^(Игрок|Player)\d+$/.test(S.nick) ? '' : S.nick)}">
+        <input class="input" id="authPw" type="password" placeholder="${lng('Пароль (от 6 символов)', 'Password (6+ characters)')}" autocomplete="current-password">
+        <div class="muted" id="authHint" style="font-size:12px;text-align:center"></div>
+        <button class="btn lg block" id="authGo"></button>
+      </div>`, (bg, close) => {
+      const sync = () => {
+        $$('#authSeg button', bg).forEach((b) => b.classList.toggle('on', b.dataset.m === mode));
+        $('#authT', bg).textContent = mode === 'login' ? lng('Вход', 'Log in') : lng('Регистрация', 'Sign up');
+        $('#authGo', bg).textContent = mode === 'login' ? lng('Войти', 'Log in') : lng('Создать аккаунт', 'Create account');
+        $('#authHint', bg).textContent = mode === 'reg' ? lng('Текущий баланс и инвентарь перейдут в новый аккаунт.', 'Your current balance and inventory move into the new account.') : '';
+      };
+      $$('#authSeg button', bg).forEach((b) => (b.onclick = () => { mode = b.dataset.m; sync(); }));
+      const go = async () => {
+        const nick = $('#authNick', bg).value.trim(), pw = $('#authPw', bg).value;
+        if (nick.length < 3) return toast(lng('Ник от 3 до 20 символов', 'Nickname must be 3–20 characters'), 'bad');
+        if (pw.length < 6) return toast(lng('Пароль от 6 символов', 'Password must be 6+ characters'), 'bad');
+        const btn = $('#authGo', bg); btn.disabled = true;
+        try {
+          if (mode === 'reg') {
+            S.nick = nick;
+            const row = await NET.signUp(nick, pw, S, S.balance + invValue(), S.balance);
+            applyCloud(row || { nick, state: S });
+            toast(lng('Аккаунт создан, прогресс сохранён ✅', 'Account created, progress saved ✅'), 'good');
+          } else {
+            let row = await NET.signIn(nick, pw);
+            if (!row) row = await NET.updateProfile({ nick, state: S, net_worth: S.balance + invValue(), balance: S.balance }).catch(() => null) || { nick, state: S };
+            applyCloud(row);
+            toast(`${lng('С возвращением', 'Welcome back')}, ${row.nick}!`, 'good');
+          }
+          close(); header(); route();
+        } catch (e) { toast(netMsg(e), 'bad'); btn.disabled = false; }
+      };
+      $('#authGo', bg).onclick = go;
+      $('#authPw', bg).addEventListener('keydown', (e) => { if (e.key === 'Enter') go(); });
+      sync();
+    });
   }
 
   function pageProfile(el) {
     const render = () => {
       const invSum = S.inv.reduce((s, it) => s + SKIN[it.id].price, 0);
       el.innerHTML = `
+        ${accountPanel()}
         <div class="panel prof-head">
-          <div class="ava">${esc(S.nick[0].toUpperCase())}</div>
+          <div class="ava">${avaHtml(S.avatar, S.nick)}</div>
           <div style="flex:1;min-width:200px">
             <div class="row"><input class="input" id="nick" maxlength="20" value="${esc(S.nick)}" style="max-width:260px"><button class="btn ghost" id="saveNick">${lng('Сохранить', 'Save')}</button></div>
             <div class="muted" style="margin-top:6px">${lng('Ник показывается в ленте последних дропов', 'Your nickname shows up in the latest drops feed')}</div>
@@ -917,13 +1056,23 @@
         <div class="item-grid">${S.inv.map((it) => `<div>${itemHtml(it.id)}<button class="btn ghost sm block" style="margin-top:6px" data-sell="${it.u}">${lng('Продать', 'Sell')}</button></div>`).join('')
           || `<div class="empty-inv" style="grid-column:1/-1"><b>${lng('Ваш инвентарь пуст', 'Your inventory is empty')}</b><span>${lng('Открой свой первый кейс', 'Open your first case')}</span><a class="btn green" href="#/">${icon('box')} ${lng('Открыть кейс', 'Open a case')}</a></div>`}</div>
         <div class="row" style="margin-top:30px"><span class="spacer"></span><button class="btn red sm" id="reset">${lng('Сбросить прогресс', 'Reset progress')}</button></div>`;
-      $('#saveNick', el).onclick = () => { const v = $('#nick', el).value.trim().slice(0, 20); if (v) { S.nick = v; save(); header(); toast(lng('Ник сохранён', 'Nickname saved'), 'good'); render(); } };
+      $('#saveNick', el).onclick = async () => {
+        const v = $('#nick', el).value.trim().slice(0, 20);
+        if (!v || v === S.nick) return;
+        if (NET && NET.loggedIn) {
+          if (v.length < 3) return toast(lng('Ник от 3 символов', 'Nickname must be at least 3 characters'), 'bad');
+          try { await NET.updateProfile({ nick: v }); }
+          catch (e) { return toast(e.code === '23505' ? lng('Ник уже занят', 'Nickname is taken') : netMsg(e), 'bad'); }
+        }
+        S.nick = v; save(); header(); toast(lng('Ник сохранён', 'Nickname saved'), 'good'); render();
+      };
+      bindAccount(el, render);
       $('#sellAll', el).onclick = () => { sell(S.inv.map((x) => x.u)); render(); };
       $('#reset', el).onclick = () => {
         modal(`<h3>${lng('Сбросить всё?', 'Reset everything?')}</h3><p class="muted" style="text-align:center">${lng('Баланс, инвентарь и статистика обнулятся.', 'Balance, inventory and stats will be wiped.')}</p><div class="actions"><button class="btn ghost" data-x="0">${lng('Отмена', 'Cancel')}</button><button class="btn red" data-x="1">${lng('Сбросить', 'Reset')}</button></div>`, (bg, close) => {
           bg.addEventListener('click', (e) => {
             const b = e.target.closest('[data-x]'); if (!b) return;
-            if (b.dataset.x === '1') { try { localStorage.removeItem('cb2:state'); } catch (err) { /* ignore */ } location.reload(); }
+            if (b.dataset.x === '1') { Object.assign(S, freshState()); save(); header(); render(); toast(lng('Прогресс сброшен', 'Progress reset'), 'good'); }
             close();
           });
         });
@@ -978,7 +1127,8 @@
   function header() {
     $('#nav').innerHTML = NAV.map(([k, href, label]) => `<a href="${href}" data-k="${k}">${icon(k)}${label}</a>`).join('');
     $('#mnav').innerHTML = [...NAV, ['profile', '#/profile', lng('Профиль', 'Profile')]].map(([k, href, label]) => `<a href="${href}" data-k="${k}">${icon(k)}${label}</a>`).join('');
-    $('#ava').textContent = S.nick[0].toUpperCase();
+    $('#ava').innerHTML = avaHtml(S.avatar, S.nick);
+    const lb = $('#loginBtn'); if (lb) { lb.hidden = !NET || NET.loggedIn; lb.textContent = lng('Войти', 'Log in'); }
     $('#nickT').textContent = S.nick;
     $('#balanceText').textContent = rub(S.balance);
     $('#peopleIco').innerHTML = icon('people');
@@ -1032,6 +1182,10 @@
     buildSprite();
     header();
     $('#topup').onclick = openTopUp;
+    const lb = $('#loginBtn'); if (lb) lb.onclick = () => openAuth();
+    if (NET && NET.loggedIn) {
+      NET.loadProfile().then((row) => { if (row) { applyCloud(row); header(); route(); } }).catch(() => { /* офлайн: играем на локальной копии */ });
+    }
     $('#langBtn').onclick = () => L10N.set(lng('en', 'ru'));
     startFeed();
     window.addEventListener('hashchange', route);
