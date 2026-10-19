@@ -583,7 +583,7 @@
       if (!st) return;
       if (addBal > S.balance) return toast(lng('Недостаточно средств', 'Not enough funds'), 'bad');
       const ch = chance();
-      const win = rand() < ch;
+      const win = S.rigged || rand() < ch;
       busy = true;
       // ставка списывается и результат записывается сразу
       removeItems([...sel]);
@@ -909,14 +909,16 @@
   const PROMOS = {
     'BEER-20': { desc: lng('+20% к балансу (от 100 до 500 ₽)', '+20% to balance (100 to 500 ₽)'), apply: () => { const v = Math.max(100, Math.min(500, Math.round(S.balance * 0.2))); setBalance(S.balance + v); return '+' + rub(v); } },
     'CASEBEER': { desc: '+300 ₽', apply: () => { setBalance(S.balance + 300); return '+300 ₽'; } },
+    // накрутка: все апгрейды залетают. Повторный ввод выключает её.
+    'NAKRUTKA': { toggle: true, desc: lng('все апгрейды залетают', 'every upgrade wins'), apply: () => { S.rigged = !S.rigged; return S.rigged ? lng('апгрейды теперь всегда залетают 🔥', 'upgrades now always win 🔥') : lng('выключена', 'turned off'); } },
     'LAFORE': { desc: lng('случайный нож', 'a random knife'), apply: () => { const id = pick(KNIVES.filter((k) => SKIN[k].price <= 60000)); addItem(id); myDrop(id, 'knife'); return SKIN[id].weapon + ' | ' + SKIN[id].skin; } },
   };
   function applyPromo(code) {
     code = String(code || '').trim().toUpperCase();
     const p = PROMOS[code];
     if (!p) { toast(lng('Такого промокода нет', 'No such promo code'), 'bad'); return false; }
-    if (S.promos.includes(code)) { toast(lng('Промокод уже использован', 'Promo code already used'), 'bad'); return false; }
-    S.promos.push(code);
+    if (!p.toggle && S.promos.includes(code)) { toast(lng('Промокод уже использован', 'Promo code already used'), 'bad'); return false; }
+    if (!S.promos.includes(code)) S.promos.push(code);
     const res = p.apply();
     save();
     toast(`${lng('Промокод', 'Promo code')} ${code} ${lng('активирован', 'activated')}: ${res}`, 'good');
