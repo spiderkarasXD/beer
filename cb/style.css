@@ -564,3 +564,12 @@ img.case-img { object-fit: contain; display: block; }
 .lb-row.place-2 .lb-ava { width: 46px; height: 46px; box-shadow: 0 0 0 3px rgba(200, 210, 230, .3); }
 .lb-row.place-2 .lb-nm { font-weight: 700; color: #dfe5f2; }
 .lb-row.place-2 .lb-sum { color: #dfe5f2; font-size: 26px; }
+
+/* ---------- аккаунты, аватарки, реальные дропы ---------- */
+.user .ava, .lb-ava, .prof-head .ava { position: relative; overflow: hidden; }
+.user .ava img, .lb-ava img, .prof-head .ava img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.acc-panel { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; border-color: rgba(255, 199, 0, .35); }
+.drop.real { box-shadow: inset 3px 0 0 var(--green); }
+.drop .live-tag { position: absolute; top: 5px; right: 6px; z-index: 1; padding: 1px 5px; border-radius: 3px; background: var(--green); color: #04220f; font-size: 9px; font-weight: 900; letter-spacing: .5px; }
+.lb-note { text-align: center; margin: -8px 0 14px; font-size: 13px; }
+.lb-row.me { outline: 2px solid var(--yellow); outline-offset: -2px; }
