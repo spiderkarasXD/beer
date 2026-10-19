@@ -928,7 +928,7 @@
   const avaHtml = (url, nick) => (url ? `<img src="${esc(url)}" alt="" onerror="this.remove()">` : '') + esc((nick || '?')[0].toUpperCase());
   function pageLeaders(el) {
     const SLOTS = 10, EVERY = 5 * 60e3;
-    let rows = null, live = false, nextAt = 0;
+    let rows = null, live = false, nextAt = 0, err = '';
     const myPeak = () => Math.max(S.st.peak || 0, S.balance);
     function render() {
       const list = rows || LEADERS.map((p) => ({ nick: p.name, avatar_url: p.ava, peak: p.sum, pinned: true }));
@@ -943,7 +943,7 @@
       const mp = myPeak();
       el.innerHTML = `
         <div class="h1">${icon('trophy')}${lng('Лидеры', 'Leaderboard')}</div>
-        <div class="lb-note muted">${lng('Рейтинг по пику денег на счету', 'Ranked by peak balance')}${live ? ` · ${lng('обновление через', 'refresh in')} <b id="lbT"></b>` : ` · ${lng('офлайн-версия', 'offline copy')}`}</div>
+        <div class="lb-note muted">${lng('Рейтинг по пику денег на счету', 'Ranked by peak balance')}${live ? ` · ${lng('обновление через', 'refresh in')} <b id="lbT"></b>` : ` · ${lng('офлайн-версия', 'offline copy')}`} · <a href="#" id="lbRefresh">${lng('Обновить', 'Refresh')}</a>${err ? ` <span class="lose-text">(${esc(err)})</span>` : ''}</div>
         <div class="lb">${Array.from({ length: SLOTS }, (_, i) => row(i)).join('')}</div>
         <div class="panel lb-me">
           <span class="lb-ava me">${avaHtml(S.avatar, S.nick)}</span>
@@ -952,12 +952,14 @@
           <div class="muted" style="font-size:12px">${mp >= top.peak ? lng('Ты на вершине 👑', 'You are on top 👑') : lng('До 1 места: ', 'To 1st place: ') + rub(top.peak - mp)}</div></div>
         </div>`;
       tick();
+      const rb = $('#lbRefresh', el);
+      if (rb) rb.onclick = (e) => { e.preventDefault(); load(); };
     }
     function tick() { const t = $('#lbT', el); if (t) t.textContent = clock(Math.max(0, nextAt - Date.now())).slice(3); }
     async function load() {
       nextAt = Date.now() + EVERY;
       if (NET) {
-        try { rows = await NET.leaderboard(SLOTS); live = true; } catch (e) { live = false; }
+        try { rows = await NET.leaderboard(SLOTS); live = true; err = ''; } catch (e) { live = false; err = e && e.message ? e.message : 'error'; }
       }
       render();
     }
