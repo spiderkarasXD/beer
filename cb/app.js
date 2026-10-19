@@ -202,8 +202,8 @@
   const NEWC = ['beer', 'ak', 'awp'];
   const limitedEnd = (i) => { const week = 7 * 864e5; const base = Math.floor(Date.now() / week) * week; return base + week + i * 864e5 * 0.37 + 3600e3 * 5; };
 
-  function roll(c) {
-    let r = rand();
+  function roll(c, rng = rand) {
+    let r = rng();
     for (const ch of c.chances) { r -= ch.p; if (r < 0) return ch.id; }
     return c.chances[c.chances.length - 1].id;
   }
@@ -224,15 +224,25 @@
   const KNIVES = SKINS.filter((s) => s.type === 'knife').map((s) => s.id);
   const FEED = [];
   let feedTab = 'all';
-  function fakeDrop() {
-    const user = pick(USERS);
-    if (user === 'lafore') return { user, id: pick(KNIVES), caseId: 'knife' };
-    const c = pickWeightedCase();
-    return { user, id: roll(c), caseId: c.id };
+  // Дропы ботов одинаковые у всех: каждый «тик» времени (0,9 с) задаёт свой seed,
+  // поэтому все игроки в один момент видят одну и ту же ленту.
+  const TICK = 900;
+  function seeded(n) {
+    let a = (n ^ 0x9e3779b9) >>> 0;
+    return () => { a = (a + 0x6d2b79f5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
   }
-  function pickWeightedCase() {
+  const pickR = (arr, rng) => arr[Math.floor(rng() * arr.length)];
+  function botDropAt(tick) {
+    const rng = seeded(tick);
+    if (rng() > 0.36) return null; // в среднем один дроп в ~2,5 с
+    const user = pickR(USERS, rng);
+    if (user === 'lafore') return { user, id: pickR(KNIVES, rng), caseId: 'knife', tick };
+    const c = pickWeightedCase(rng);
+    return { user, id: roll(c, rng), caseId: c.id, tick };
+  }
+  function pickWeightedCase(rng = rand) {
     const ws = PAID.map((c) => 1 / Math.sqrt(c.price + 30));
-    let r = rand() * ws.reduce((a, b) => a + b, 0);
+    let r = rng() * ws.reduce((a, b) => a + b, 0);
     for (let i = 0; i < PAID.length; i++) { r -= ws[i]; if (r < 0) return PAID[i]; }
     return PAID[0];
   }
@@ -276,18 +286,24 @@
     } catch (e) { /* нет сети — живём на ботах */ }
   }
   function startFeed() {
-    for (let i = 0; i < 40; i++) FEED.push(fakeDrop());
-    // в «Топ» сразу должно что-то быть
-    for (let i = 0; i < 6; i++) FEED.splice(randInt(FEED.length), 0, { user: pick(USERS), id: pick(SKINS.filter((s) => s.price >= 1000)).id, caseId: pick(['covert', 'knife', 'high']) });
+    const nowTick = () => Math.floor(Date.now() / TICK);
+    let lastTick = nowTick();
+    // история за последние ~4 минуты — тоже общая для всех
+    for (let t = lastTick - 260; t <= lastTick; t++) { const d = botDropAt(t); if (d) FEED.unshift(d); }
+    FEED.splice(80);
     renderFeed();
     $$('.side-tabs button').forEach((b) => (b.onclick = () => { feedTab = b.dataset.t; renderFeed(); }));
-    const loop = () => { pushDrop(fakeDrop()); setTimeout(loop, 1300 + rand() * 2600); };
-    setTimeout(loop, 1500);
+    setInterval(() => {
+      const t = nowTick();
+      for (let k = lastTick + 1; k <= t; k++) { const d = botDropAt(k); if (d) pushDrop(d); }
+      lastTick = t;
+    }, 300);
     pollRealDrops(true);
-    setInterval(() => pollRealDrops(false), 8000);
-    let online = 6100 + randInt(800);
+    setInterval(() => pollRealDrops(false), 3000);
+    // онлайн тоже общий: плавная функция от времени
     const upd = () => {
-      online = Math.max(4000, online + randInt(41) - 20);
+      const m = Math.floor(Date.now() / 3500) * 3500 / 60000; // меняется ступенькой раз в 3,5 с — у всех одно число
+      const online = Math.round(6400 + 600 * Math.sin(m / 37) + 180 * Math.sin(m / 5.3) + 40 * Math.sin(m * 1.7));
       const t = online.toLocaleString(L10N.locale);
       $('#onlineSide').textContent = t; $('#onlineHead').textContent = t;
     };
