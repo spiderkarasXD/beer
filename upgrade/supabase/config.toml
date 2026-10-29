@@ -1,0 +1,3 @@
+# Для деплоя через Supabase CLI: функцию вызывает сайт с публичным ключом, JWT не проверяем
+[functions.sync-prices]
+verify_jwt = false
