@@ -1,0 +1,10 @@
+{
+  "name": "upgrader",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs",
+    "build:catalog": "node scripts/build-catalog.mjs"
+  },
+  "engines": { "node": ">=18" }
+}

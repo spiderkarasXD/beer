@@ -48,6 +48,7 @@
     { href: 'old/', name: 'Beer Translate (old)', desc: lng('Самая первая версия переводчика', 'The very first version of the translator'), icon: 'history', cls: 'c1' },
     { href: 'rat/', name: lng('Раздел с крысой', 'Rat section'), desc: lng('Просто крыса', 'Just a rat'), icon: 'pest_control_rodent', cls: 'c3' },
     { href: 'rice/', name: 'Rice', desc: lng('Калькулятор риса и переводчик из риса во всё', 'Rice calculator and rice-to-everything converter'), icon: 'rice_bowl', cls: 'c2' },
+    { href: 'upgrade/', name: 'Upgrader', desc: lng('Апгрейд скинов CS2 по реальным ценам', 'CS2 skin upgrader with real prices'), icon: 'trending_up', cls: 'c4' },
   ];
 
   Beer.route('sections', {
