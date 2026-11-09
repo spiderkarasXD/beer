@@ -1,0 +1,18 @@
+.essential-game>.message:empty{display:none}
+.essential-game>.message{color:#d9ffe9;padding:4px 0}
+.essential-game .essential-search{width:9rem;height:4.4rem;padding:0 .8rem;background:#262a2b75;border:1px solid #ffffff26;color:white}
+.essential-game .essential-search::placeholder{color:#fff9}
+.essential-game .essential-pointer{transform:rotate(180deg)}
+.essential-game .essential-pointer.rolling{animation:essential-spin .55s ease-out}
+.essential-game #targets [data-target]{cursor:pointer;min-width:0}
+.essential-game #targets [data-target].selected,.essential-game #owned [data-source].selected{outline:2px solid #83d8ff;outline-offset:-2px}
+.essential-game .tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1rem;padding:1rem}
+.essential-game .tile{min-width:0;text-align:left;background:linear-gradient(#2a2b2c,#606164);padding:.6rem;border-bottom:3px solid var(--grade,#83d8ff);color:white;cursor:pointer}
+.essential-game .tile img,.essential-game #targets .tile img{width:100%;height:8.5rem;object-fit:contain}
+.essential-game .tile small{display:block;overflow-wrap:anywhere}
+.essential-game #source-preview img,.essential-game #target-preview img{width:min(75%,260px);max-height:19rem;object-fit:contain}
+.essential-game #source-preview,.essential-game #target-preview{display:flex;flex-direction:column;align-items:center;gap:.4rem}
+@keyframes essential-spin{to{transform:rotate(calc(180deg + var(--roll,720deg)))}}
+.game-wallet{gap:5px;border:1px solid #6bea9c60;background:#153d32c9;padding:0 0 0 7px;font-size:14px}
+.game-wallet img{width:16px;height:16px}
+.game-wallet button{font-size:19px;line-height:1;background:#1b6d49;padding:5px 10px;border:0;border-left:1px solid #6bea9c60}

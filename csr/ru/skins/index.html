@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; script-src 'self'; img-src 'self'; connect-src 'none'; form-action 'none'; base-uri 'none'">
+  <title>Каталог скинов CS2 · CASER Offline</title>
+  <link rel="stylesheet" href="catalog.css">
+  <script defer src="skins.js"></script>
+  <script defer src="catalog.js"></script>
+</head>
+<body>
+  <header><a href="../index.html">← Апгрейды</a><a href="../inventory/index.html">Инвентарь</a></header>
+  <main>
+    <h1>Каталог скинов CS2</h1>
+    <p>Локальная коллекция игровых изображений.</p>
+    <div class="filters">
+      <label>Поиск<input id="search" type="search" placeholder="Например, AK-47 Redline"></label>
+      <label>Оружие<select id="weapon"><option value="">Все</option></select></label>
+      <label>Редкость<select id="rarity"><option value="">Все</option></select></label>
+    </div>
+    <p id="status" aria-live="polite"></p>
+    <section id="cards" class="cards" aria-label="Скины"></section>
+    <nav aria-label="Страницы каталога">
+      <button type="button" id="previous">← Назад</button>
+      <span id="page"></span>
+      <button type="button" id="next">Далее →</button>
+    </nav>
+  </main>
+  <template id="card"><article><img width="360" height="240" alt=""><div><h2></h2><p></p></div></article></template>
+</body>
+</html>

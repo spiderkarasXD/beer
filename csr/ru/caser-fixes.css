@@ -1,0 +1,65 @@
+#game>.message:not(:empty){position:fixed;z-index:50;right:18px;bottom:max(18px,env(safe-area-inset-bottom));width:max-content;max-width:min(440px,calc(100vw - 36px));padding:11px 15px;color:#ecfff5;background:#162b23f5;border:1px solid #58bc857d;box-shadow:0 8px 25px #0007;pointer-events:none;font:700 15px var(--font-sofia-sans),system-ui,sans-serif}
+#game>.message:empty{display:none}
+#nav-cubes{pointer-events:none}
+.caser-wallet-shell{margin-inline-start:auto}
+.game-wallet{margin:0;gap:0;background:linear-gradient(270deg,#0008,transparent);border:0;border-block:1px solid transparent;border-image:linear-gradient(270deg,#44c98785,transparent) 1;color:#44c987;font:400 2rem/1 var(--font-oswald),system-ui,sans-serif;min-height:4.4rem;padding-left:1.8rem}
+.caser-wallet-part{padding:.55rem .5rem;gap:.5rem}
+.game-wallet img{width:2.4rem;height:2.4rem}
+.game-wallet #earn{width:4.4rem;height:4.4rem;margin-left:.65rem;border:1px solid #44c987;background:#13432c;box-shadow:inset 0 0 1.66rem #44c98773;color:#44c987}
+.game-wallet #earn:hover{background:#1d5a3a}
+.caser-clicker{position:fixed;inset:0;margin:auto;width:min(440px,calc(100vw - 28px));height:max-content;max-height:calc(100dvh - 28px);padding:0;border:1px solid #4f6e5e;background:#222826;color:#f5fff9}
+.caser-clicker header{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:1rem 1.5rem;background:#151d19;border-bottom:1px solid #78e9ae35}
+.caser-clicker header h2{margin:0;font:400 2.5rem var(--font-oswald),system-ui,sans-serif;text-transform:uppercase}
+.caser-clicker .clicker-body{display:grid;justify-items:center;gap:1rem;padding:2rem}
+.caser-clicker p,#clicker-balance{margin:0}
+#clicker-balance{font:700 3rem var(--font-sofia-sans),system-ui,sans-serif;color:#88e4a9}
+#click-coin{display:flex;align-items:center;justify-content:center;gap:.8rem;padding:1rem 2rem;font-weight:700}
+#close-clicker{float:none;min-width:34px}
+.essential-game .caser-wheel-arc{background:conic-gradient(from var(--sector-start,90deg),#a64900 0deg,#ff9a08 var(--chance-angle,180deg),transparent var(--chance-angle,180deg));mask-image:radial-gradient(transparent 51%,#000 52%)}
+.essential-game [data-wheel].caser-win .caser-wheel-arc{background:conic-gradient(from var(--sector-start),#177f4b 0deg,#6cf79b var(--chance-angle),transparent var(--chance-angle))}
+.essential-game [data-wheel].caser-win #chance{color:#9affbb}
+.essential-game [data-wheel].caser-loss #chance{color:#ff9090}
+.essential-game #stake{position:relative;z-index:2;height:1.8rem;touch-action:none}
+.essential-game #stake::-webkit-slider-runnable-track{background:linear-gradient(90deg,#87dcb4 var(--range-progress),#ffffff36 var(--range-progress));height:.65rem}
+.essential-game #stake::-moz-range-progress{background:#87dcb4}
+.essential-game #stake:disabled{opacity:.42;cursor:default}
+.caser-selected-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(45px,1fr));width:min(96%,380px);max-height:75%;overflow:auto;gap:4px}
+.essential-game #source-preview .caser-selected-grid img{width:100%;height:clamp(30px,4vw,56px);object-fit:contain}
+.caser-selected-grid span{background:#20272459;border:1px solid #a1c3b840}
+.game .caser-case-heading{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:1rem}
+.game .caser-case-heading h1,.game .caser-case-stage h1{margin:0;font:400 3.5rem var(--font-oswald),system-ui,sans-serif;text-transform:uppercase}
+.game .caser-case-heading input{max-width:46%}
+.game .caser-case-section{margin:2.5rem 0}
+.game .caser-case-section h2{font:400 2.65rem var(--font-oswald),system-ui,sans-serif;margin-bottom:1.2rem;text-transform:uppercase;border-bottom:1px solid #ffffff35;padding-bottom:.8rem}
+.game .caser-case-grid{grid-template-columns:repeat(auto-fill,minmax(17rem,1fr));gap:1rem}
+.game .caser-case-card{display:flex;flex-direction:column;gap:0;background:#15171550;border:0;padding:0;min-height:0;transition:filter .18s}
+.game .caser-case-card:hover{filter:brightness(1.2);background:#15171550}
+.caser-case-art{display:grid;place-items:center;width:100%;height:16rem;background:linear-gradient(#454645,#939393);border:1px solid #0003}
+.caser-case-card .caser-case-art img{height:95%;width:96%;object-fit:contain}
+.caser-case-caption{display:grid;justify-items:center;gap:.35rem;width:100%;padding:.9rem 0;text-align:center}
+.caser-case-caption strong{font-size:1.6rem;color:#fff}
+.caser-case-caption>span{color:#9ef0bc}
+.caser-case-stage{display:grid;justify-items:center;gap:1.4rem;padding:1.5rem 1rem 2rem;background:#15191769;border:1px solid #ffffff26}
+.caser-case-cover img{display:block;max-width:100%;width:31rem;height:20rem;object-fit:contain}
+#case-rollers{width:100%;min-width:0}
+.caser-case-cover{display:grid;place-items:center}
+.caser-case-options{display:flex;flex-wrap:wrap;justify-content:center;gap:.5rem}
+.game .caser-case-options button{min-width:3.8rem;padding:.55rem;background:#171a1866}
+.game .caser-case-options [aria-pressed=true]{color:#a5fbd1;border-color:#50d698;background:#174633}
+.game .caser-case-open{min-width:min(100%,25rem);text-transform:uppercase;font-weight:800}
+.caser-reel-grid,.caser-case-results,.caser-case-loot{display:grid;gap:.8rem}
+.caser-reel-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.caser-reel-grid[data-count="1"]{grid-template-columns:minmax(0,1fr)}
+.caser-case-results,.caser-case-loot{grid-template-columns:repeat(auto-fill,minmax(11rem,1fr))}
+.caser-reel{position:relative;overflow:hidden;min-width:0;border:1px solid #9aada36b;background:#242926}
+.caser-reel::after{content:"";position:absolute;left:50%;top:0;bottom:0;width:2px;transform:translateX(-50%);background:#ffd17d;box-shadow:0 0 9px #ffaa32;pointer-events:none}
+.caser-reel-track{position:relative;display:flex;gap:5px;width:max-content;will-change:transform}
+.caser-reel-track .caser-reel-item{width:110px;flex:0 0 110px}
+.caser-reel-item{min-width:0;display:grid;grid-template-rows:65px auto;padding:.45rem;background:linear-gradient(#414541,#777b78);border-bottom:3px solid var(--item-color,#83d8ff)}
+.caser-reel-item img{height:100%;width:100%;object-fit:contain}
+.caser-reel-item small{font-weight:700;font-size:1.1rem;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.caser-case-results .caser-reel-item{outline:1px solid #7ddca38a}
+.caser-rewards [data-daily],.caser-rewards [data-draw]{position:relative;z-index:3;pointer-events:auto;cursor:pointer}
+.caser-rewards [data-daily]:disabled,.caser-rewards [data-draw]:disabled{cursor:default}
+@media(max-width:700px){.game-wallet{font-size:1.45rem;min-height:3.1rem;padding-left:.35rem}.game-wallet img{width:1.55rem;height:1.55rem}.game-wallet #earn{width:3.1rem;height:3.1rem}.game .caser-case-grid{grid-template-columns:repeat(auto-fill,minmax(13rem,1fr))}.caser-case-art{height:12rem}.caser-reel-grid{grid-template-columns:minmax(0,1fr)}}
+.caser-reel{container-type:inline-size}

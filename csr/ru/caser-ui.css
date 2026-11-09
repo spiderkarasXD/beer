@@ -1,0 +1,70 @@
+.essential-game,.caser-rewards{color:#fff;width:100%;min-width:0}
+.essential-game .game-nav,.caser-rewards .game-nav{display:none}
+.essential-game [data-testid=upgrade-spinner-container]{overflow:visible}
+.caser-upgrade-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(250px,40rem) minmax(0,1fr);align-items:start}
+.caser-upgrade-row>*{width:100%;min-width:0}
+.essential-game [data-testid=upgrade-center-block]{width:100%;margin-inline:auto}
+.essential-game #upgrade{margin-inline:auto;background:#1f25213d;border-color:#ffffff38;cursor:default}
+.essential-game #upgrade:not(:disabled){background:#174c3880;border-color:#50ce94;cursor:pointer;box-shadow:inset 0 0 18px #59dca541}
+.essential-game #upgrade:not(:disabled) span{color:#c1ffe0}
+.essential-game #upgrade:disabled span{color:#ffffff62}
+.essential-game [data-ratio],.essential-game [data-toggle],.essential-game [data-page]{background:#1b211e38;opacity:1;cursor:pointer}
+.essential-game [data-page]:disabled{opacity:.38;cursor:default}
+.essential-game [data-ratio]:hover,.essential-game [data-toggle]:hover,.essential-game [data-page]:hover:not(:disabled){background:#95cebe2d}
+.essential-game [data-toggle][aria-pressed=true]{background:#83d8ff3b}
+.essential-game [data-testid=upgrade-fast-amounts-mystery-toggle][aria-pressed=true]{outline:2px solid #75ffb1;box-shadow:inset 0 0 18px #56ff9e99}
+.essential-game .caser-wheel-arc{background:conic-gradient(from calc(180deg - var(--chance-angle,180deg)/2),#a64900 0deg,#ff9a08 var(--chance-angle,180deg),transparent var(--chance-angle,180deg));mask-image:radial-gradient(transparent 51%,#000 52%)}
+.essential-game .essential-pointer.rolling{animation:caser-turn var(--spin-time,3600ms) cubic-bezier(.13,.62,.18,1) both}
+@keyframes caser-turn{from{transform:rotate(180deg)}to{transform:rotate(calc(180deg + var(--roll,1080deg)))}}
+.essential-game [data-max]{cursor:pointer}
+.essential-game #stake{display:block;width:100%;margin:0;box-sizing:border-box}
+.essential-game .essential-search{background:#2428263d}
+.essential-game #targets .tile{position:relative;min-height:13rem;display:grid;grid-template-rows:1fr auto;align-items:end;overflow:hidden;text-align:left;background:linear-gradient(#272b2ca0,#898c8a99);border:1px solid #ffffff19;border-bottom:3px solid var(--grade,#83d8ff);padding:5px}
+.essential-game #targets .tile .price{position:absolute;top:3px;right:4px;font-size:12px;z-index:1}
+.essential-game #targets .tile img:not(.caser-coin){width:100%;height:8rem;object-fit:contain}
+.essential-game #targets .tile small{font-weight:700;line-height:1.2}
+.caser-coin,.essential-game #targets .tile .caser-coin,.essential-game .tile .caser-coin,.essential-game #source-preview .caser-coin,.essential-game #target-preview .caser-coin,.game .tile .caser-coin{width:1em;height:1em;display:inline-block;vertical-align:-.14em;object-fit:contain}
+.game-wallet{background:#1829236b;padding:0;gap:0;font-variant-numeric:tabular-nums}
+.caser-wallet-part{display:flex;align-items:center;gap:5px;padding:5px 8px}
+.caser-wallet-part:first-child{color:#91dfff}
+.game-wallet button{background:#11634269}
+.caser-clicker{color:white;background:#1d2422;border:1px solid #63d99c70;border-radius:3px;min-width:min(340px,90vw);padding:22px;box-shadow:0 14px 50px #000a}
+.caser-clicker::backdrop{background:#080e0bbb}
+.caser-clicker h2{font-size:24px}
+.caser-clicker p{margin:8px 0 16px}
+.caser-clicker button{cursor:pointer;color:#a8ffcb;background:#174531;border:1px solid #62d49b75;padding:8px}
+.caser-clicker button img{height:1em;width:1em;display:inline-block;vertical-align:middle}
+#close-clicker{float:right}
+#clicker-balance{display:block;margin-top:12px}
+.caser-case-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:12px}
+.game .caser-case-card{display:grid;gap:4px;text-align:center;justify-items:center;background:radial-gradient(ellipse at 50% 45%,#54766e7d,#1c242257 70%);border-color:#ffffff30;min-width:0}
+.caser-case-card img:not(.caser-coin){width:100%;height:130px;object-fit:contain}
+.caser-case-card strong{overflow-wrap:anywhere}
+.caser-case-hero{display:grid;justify-items:center;gap:8px;background:#21292557;padding:16px;margin:8px 0 20px}
+.caser-case-hero>img{width:min(300px,100%);height:200px;object-fit:contain}
+.caser-case-hero p{color:#ffffffbb}
+.caser-rewards>.message{color:#b5ffce;margin-bottom:8px}
+.caser-rewards>.message:empty{display:none}
+.caser-rewards button:disabled{opacity:.6}
+@media(max-width:1100px){
+.essential-game,.caser-rewards{padding-inline:10px}
+.essential-game .game-nav,.caser-rewards .game-nav{display:flex;color:#a8e8ff}
+.caser-upgrade-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
+.caser-upgrade-row>:nth-child(2){grid-column:1/-1;grid-row:1}
+.essential-game [data-testid=upgrade-center-block]{max-width:410px}
+.essential-game [data-testid=upgrade-user-items-card],.essential-game [data-testid=upgrade-desired-card]{height:19rem}
+.essential-game [data-testid=upgrade-fast-amounts-block]{flex-wrap:wrap}
+.essential-game [data-testid=upgrade-fast-amounts-block] button{height:3.6rem}
+.essential-game [data-testid=upgrade-sound-toolbar]{position:static;margin-bottom:-1rem}
+.caser-upgrade-lists [role=tabpanel]{flex-basis:100%}
+.essential-game[data-list=desired] .caser-upgrade-lists [role=tabpanel]:first-child,.essential-game[data-list=inventory] .caser-upgrade-lists [role=tabpanel]:last-child{display:none}
+.essential-game [data-list][data-active=true]{color:#a7e5ff;background:#18252063}
+}
+@media(max-width:480px){
+.game-wallet{font-size:11px;margin-right:5px}.caser-wallet-part{padding:4px 5px}.game-wallet img{width:12px;height:12px}
+.essential-game #targets{grid-template-columns:repeat(3,minmax(0,1fr))}
+.essential-game #targets .tile{min-height:10rem}
+.essential-game [data-testid=upgrade-fast-amounts-block] button{font-size:1rem}
+}
+a[aria-current=page]{color:#83d8ff!important}
+.essential-game #owned [data-source]{cursor:pointer}

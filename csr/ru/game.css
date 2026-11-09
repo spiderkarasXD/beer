@@ -1,0 +1,59 @@
+.game {color:#fff;font:500 15px var(--font-sofia-sans),system-ui,sans-serif;width:100%;padding:0 12px;line-height:1.35}
+.game [hidden]{display:none!important}
+.game h1,.game h2,.game p{margin:0}
+.game h1{font-size:27px;margin-bottom:14px}
+.game h2{font-size:16px}
+.game a,.game button{cursor:pointer}
+.game a{color:#9fe4ff}
+.game button,.game input{font:inherit;color:inherit}
+.game button,.game input:not([type=range]){background:#242828bd;border:1px solid #ffffff43;padding:8px 11px}
+.game button:hover:not(:disabled){border-color:#83d8ff;background:#384b52}
+.game button:disabled{opacity:.47;cursor:default}
+.game .primary{background:#133d30;border-color:#50d698;color:#a5fbd1}
+.game .selected{outline:2px solid #83d8ff;outline-offset:-2px}
+.game .upgrade-top{display:grid;grid-template-columns:minmax(0,1fr) minmax(220px,.74fr) minmax(0,1fr);gap:14px}
+.game .preview,.game .panel{background:#26272570;min-width:0}
+.game .bar{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;background:#202322a8;padding:11px 13px;min-height:43px}
+.game .preview-body{display:grid;align-content:center;justify-items:center;gap:6px;height:clamp(190px,29vw,335px);padding:8px;text-align:center;background:radial-gradient(#ffffff19 1px,transparent 1px) 0 0/20px 20px}
+.game .preview-body img{width:80%;height:160px;object-fit:contain}
+.game .wheel-box{display:grid;grid-template-rows:43px 1fr auto;text-align:center;align-items:center;min-width:0}
+.game .wheel-logo{height:28px;width:auto;margin:auto}
+.game .dial{position:relative;width:min(100%,325px);aspect-ratio:1;margin:auto}
+.game .dial img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+.game .dial output{position:absolute;inset:0;display:grid;place-content:center;font-size:clamp(23px,3vw,42px);font-weight:800;text-shadow:0 2px 5px #000}
+.game .dial.rolling .pointer{animation:game-spin .55s ease-out}
+@keyframes game-spin{to{transform:rotate(720deg)}}
+.game .wheel-box button{width:100%;text-transform:uppercase;font-weight:800}
+.game .stake{display:flex;align-items:center;gap:7px;flex-wrap:wrap;padding:8px 10px;background:#2327239c;min-height:49px}
+.game .stake input{flex:1;min-width:65px;accent-color:#59dca5}
+.game .upgrade-bottom{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+.game .tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(115px,1fr));gap:8px;padding:10px}
+.game .tile{display:flex;flex-direction:column;min-height:110px;align-items:stretch;text-align:left;padding:5px;background:linear-gradient(#292a2c,#646566);border:0;border-bottom:3px solid var(--grade,#83d8ff)}
+.game .tile img{width:100%;height:64px;object-fit:contain}
+.game .tile small,.game .tile strong{display:block;overflow-wrap:anywhere}
+.game .tile .price{text-align:right;font-size:12px}
+.game .muted{color:#e2e2e2;text-align:center;padding:22px 8px}
+.game .controls{display:flex;align-items:center;gap:7px;flex-wrap:wrap;padding:9px}
+.game .controls input[type=search]{min-width:0;flex:1}
+.game .controls input[type=number]{width:77px}
+.game .message{min-height:25px;padding:6px 0;color:#dbffeb}
+.game .boxes{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}
+.game .box{padding:15px;background:#222726b8;border:1px solid #ffffff2e;display:grid;gap:10px;align-content:start}
+.game .box img{width:100%;height:140px;object-fit:contain}
+.game .box details{font-size:13px}
+.game .box ul{padding-left:18px}
+.game-wallet{position:relative;z-index:2;display:flex;align-items:center;gap:8px;margin-right:12px;padding:6px 8px;font:700 15px system-ui,sans-serif;color:#8ff2ba;background:#143f33}
+.game-wallet button{background:#1c5c45;color:#c9ffdc;border:1px solid #65b994;padding:4px 9px;cursor:pointer}
+.game-nav{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;font-size:13px}
+@media(min-width:950px){.game .game-nav{display:none}}
+@media(max-width:740px){.game .upgrade-top{grid-template-columns:1fr 1fr}.game .wheel-box{grid-column:1/-1;grid-row:1}.game .dial{width:min(53vw,235px)}.game .preview-body{height:155px}.game .preview-body img{height:85px}.game .upgrade-bottom{grid-template-columns:1fr}.game-wallet{font-size:12px}.game .bar{padding:7px}}
+.game .dial .wheel-ring{inset:8.5%;width:83%;height:83%}
+.game .dial .wheel-center{inset:24%;width:52%;height:52%}
+.game .pointer{position:absolute;inset:0}
+.game .pointer img{inset:auto 36% -2%;width:28%;height:28%}
+@media(prefers-reduced-motion:reduce){.game .dial.rolling .pointer{animation:none}}
+.game .wheel-fill{position:absolute;inset:8%;border-radius:50%;background:conic-gradient(from 180deg,#a84c00 0deg,#ef9400 var(--arc,180deg),#222726 var(--arc,180deg),#151817 360deg);box-shadow:inset 0 0 22px #0d1417}
+.game .wheel-fill::after{content:"";position:absolute;inset:19%;border-radius:50%;background:#171a19;border:3px solid #ffffff24}
+.game .dial .wheel-emblem{inset:25%;width:50%;height:50%;opacity:.8}
+.game .pointer img{transform:rotate(180deg)}
+@keyframes game-spin{to{transform:rotate(var(--roll,720deg))}}

@@ -49,6 +49,7 @@
     { href: 'rat/', name: lng('Раздел с крысой', 'Rat section'), desc: lng('Просто крыса', 'Just a rat'), icon: 'pest_control_rodent', cls: 'c3' },
     { href: 'rice/', name: 'Rice', desc: lng('Калькулятор риса и переводчик из риса во всё', 'Rice calculator and rice-to-everything converter'), icon: 'rice_bowl', cls: 'c2' },
     { href: 'upgrade/', name: 'Upgrader', desc: lng('Апгрейд скинов CS2 по реальным ценам', 'CS2 skin upgrader with real prices'), icon: 'trending_up', cls: 'c4' },
+    { href: 'csr/', name: 'csr', desc: lng('Кейсы и апгрейды CS2', 'CS2 cases and upgrades'), icon: 'inventory_2', cls: 'c4' },
   ];
 
   Beer.route('sections', {

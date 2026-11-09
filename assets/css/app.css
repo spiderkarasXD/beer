@@ -465,3 +465,14 @@
 
 .confetti { position: fixed; top: -10px; width: 10px; height: 14px; z-index: 60; pointer-events: none; border-radius: 2px; animation: confetti linear forwards; }
 @keyframes confetti { to { transform: translateY(105vh) rotate(720deg); } }
+
+/* The directory shares one visual rhythm across its destinations. */
+.grid-cards:has(.sec-card) { grid-template-columns:repeat(auto-fill,minmax(min(100%,280px),1fr)) !important; gap:12px; }
+.sec-card { min-height:88px; border-radius:12px; border:1px solid var(--md-outline-variant); transition:background .16s ease; }
+.sec-card:active { border-radius:12px; }
+.sec-card:hover { background:var(--md-surface-container-high); }
+.sec-card:focus-visible { outline:2px solid var(--md-primary); outline-offset:2px; }
+.sec-card .gc-icon { width:40px; height:40px; border-radius:8px; background:var(--md-surface-container-high); color:var(--md-primary); }
+.sec-card .gc-icon .ms { font-size:22px; color:inherit; }
+.sec-card b { font-size:16px; font-weight:500; }
+.sec-card > div > span { display:block; margin-top:4px; line-height:1.35; }
