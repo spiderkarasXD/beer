@@ -39,10 +39,8 @@
       el.appendChild(h(`
         <div>
           <section class="hero">
-            <div class="bubbles"></div>
-            <span class="mug">🍺</span>
             <h1>${lng('Переводчик на <b>пивной</b> язык', 'Translator into the <b>beer</b> language')}</h1>
-            <p>${lng('Пиши по-русски или по-английски — получай шифр, понятный только настоящим ценителям. Работает и в обратную сторону.', 'Write in Russian or English and get a cipher only true connoisseurs understand. Works the other way too.')}</p>
+            <p>${lng('Введи текст на русском или английском. Перевод появится рядом. Пивной текст можно расшифровать обратно.', 'Enter text in Russian or English to encode it, or switch direction to decode it.')}</p>
           </section>
 
           <div class="tr-controls">
@@ -86,18 +84,6 @@
           </div>
           <div class="footer">Beer Translate · ${lng('сделано с любовью к крафту 🍻', 'made with love for craft beer 🍻')}</div>
         </div>`));
-
-      // пузырьки в шапке
-      const bubbles = $('.bubbles', el);
-      for (let i = 0; i < 14; i++) {
-        const b = document.createElement('span');
-        const s = 8 + Beer.rand() * 22;
-        b.style.width = b.style.height = s + 'px';
-        b.style.left = Beer.rand() * 100 + '%';
-        b.style.animationDuration = 5 + Beer.rand() * 7 + 's';
-        b.style.animationDelay = -Beer.rand() * 10 + 's';
-        bubbles.appendChild(b);
-      }
 
       const input = $('#trInput', el);
       const output = $('#trOutput', el);

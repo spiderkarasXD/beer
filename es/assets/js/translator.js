@@ -39,8 +39,6 @@
       el.appendChild(h(`
         <div>
           <section class="hero">
-            <div class="bubbles"></div>
-            <span class="mug">☕</span>
             <h1>Переводчик на <b>секретный</b> язык</h1>
             <p>Пиши по-русски или по-английски — получай шифр, понятный только настоящим ценителям. Работает и в обратную сторону.</p>
           </section>
@@ -86,18 +84,6 @@
           </div>
           <div class="footer">Shifr · сделано с любовью к коду ☕</div>
         </div>`));
-
-      // пузырьки в шапке
-      const bubbles = $('.bubbles', el);
-      for (let i = 0; i < 14; i++) {
-        const b = document.createElement('span');
-        const s = 8 + App.rand() * 22;
-        b.style.width = b.style.height = s + 'px';
-        b.style.left = App.rand() * 100 + '%';
-        b.style.animationDuration = 5 + App.rand() * 7 + 's';
-        b.style.animationDelay = -App.rand() * 10 + 's';
-        bubbles.appendChild(b);
-      }
 
       const input = $('#trInput', el);
       const output = $('#trOutput', el);

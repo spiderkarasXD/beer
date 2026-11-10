@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html data-beer-page="music" lang="ru">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -198,8 +198,10 @@ body:has(a:hover) #cur,body:has(button:hover) #cur{transform:translate(-50%,-50%
 @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
 @media(max-width:900px){.setup-wrap{grid-template-columns:1fr}.setup-hero{display:none}.setup-right{min-height:100vh;max-height:none}.app-body{grid-template-columns:1fr;grid-template-rows:300px 1fr}.chat-col{border-right:none;border-bottom:1px solid var(--wire)}.tr-why{display:none}.ai-grid{grid-template-columns:1fr 1fr}}
 </style>
+  <link rel="stylesheet" href="../assets/css/section-polish.css?v=1">
 </head>
 <body>
+<a class="beer-return" href="../index.html#/sections">Beer · Разделы</a>
 <canvas class="liquid-canvas" id="liquidCanvas"></canvas>
 <div class="grain"></div>
 <div id="cur"></div><div id="cur2"></div>
@@ -210,36 +212,35 @@ body:has(a:hover) #cur,body:has(button:hover) #cur{transform:translate(-50%,-50%
     <div class="setup-hero">
       <div class="logo-row"><div class="logo-pip"></div><div class="logo-txt">VibeFilter</div></div>
       <div class="hero-center">
-        <div class="hero-tag">AI Music Curator</div>
-        <h1 class="hero-h">Kill<br>Your<br><span class="out">Bad</span><br><i>Tracks.</i></h1>
-        <p class="hero-desc">Расскажи ИИ что слушаешь сейчас — он пройдётся по библиотеке и вырежет всё лишнее. До 500 треков.</p>
+        <div class="hero-tag">VibeFilter</div>
+        <h1 class="hero-h">Фильтр библиотеки Spotify</h1>
+        <p class="hero-desc">Опиши, что хочешь оставить в библиотеке. VibeFilter разберёт до 500 треков и предложит, что убрать.</p>
       </div>
       <div class="hero-stats">
         <div class="hst"><div class="hst-n">500</div><div class="hst-l">Треков</div></div>
         <div class="hst"><div class="hst-n">6</div><div class="hst-l">AI Моделей</div></div>
-        <div class="hst"><div class="hst-n">0s</div><div class="hst-l">Ручного труда</div></div>
       </div>
     </div>
     <div class="setup-right">
       <div class="sec-lbl">Шаг 1 — Выбери AI провайдера</div>
       <div class="ai-grid" id="aiGrid">
         <button class="ai-card" data-ai="anthropic" onclick="pickAI(this)">
-          <div class="ai-logo">🟠</div><div class="ai-name">Claude</div><div class="ai-model">Sonnet 4</div><div class="ai-price p-paid">$3 / 1M</div>
+          <div class="ai-name">Claude</div><div class="ai-model">Sonnet 4</div><div class="ai-price p-paid">$3 / 1M</div>
         </button>
         <button class="ai-card" data-ai="openai" onclick="pickAI(this)">
-          <div class="ai-logo">⚫</div><div class="ai-name">ChatGPT</div><div class="ai-model">GPT-4o mini</div><div class="ai-price p-cheap">$0.15 / 1M</div>
+          <div class="ai-name">ChatGPT</div><div class="ai-model">GPT-4o mini</div><div class="ai-price p-cheap">$0.15 / 1M</div>
         </button>
         <button class="ai-card sel" data-ai="gemini" onclick="pickAI(this)">
-          <div class="ai-logo">🔵</div><div class="ai-name">Gemini</div><div class="ai-model">2.0 Flash</div><div class="ai-price p-free">БЕСПЛАТНО</div>
+          <div class="ai-name">Gemini</div><div class="ai-model">2.0 Flash</div><div class="ai-price p-free">БЕСПЛАТНО</div>
         </button>
         <button class="ai-card" data-ai="grok" onclick="pickAI(this)">
-          <div class="ai-logo">✖️</div><div class="ai-name">Grok</div><div class="ai-model">Grok-3 Mini</div><div class="ai-price p-cheap">$0.30 / 1M</div>
+          <div class="ai-name">Grok</div><div class="ai-model">Grok-3 Mini</div><div class="ai-price p-cheap">$0.30 / 1M</div>
         </button>
         <button class="ai-card" data-ai="deepseek" onclick="pickAI(this)">
-          <div class="ai-logo">🌊</div><div class="ai-name">DeepSeek</div><div class="ai-model">V3</div><div class="ai-price p-cheap">$0.07 / 1M</div>
+          <div class="ai-name">DeepSeek</div><div class="ai-model">V3</div><div class="ai-price p-cheap">$0.07 / 1M</div>
         </button>
         <button class="ai-card" data-ai="mistral" onclick="pickAI(this)">
-          <div class="ai-logo">🌪️</div><div class="ai-name">Mistral</div><div class="ai-model">Small 3.1</div><div class="ai-price p-cheap">$0.10 / 1M</div>
+          <div class="ai-name">Mistral</div><div class="ai-model">Small 3.1</div><div class="ai-price p-cheap">$0.10 / 1M</div>
         </button>
       </div>
       <div class="fwrap" style="margin-top:14px">

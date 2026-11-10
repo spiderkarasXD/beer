@@ -1,0 +1,63 @@
+/* Design pass informed by unslop, Damir Sokolovsky (CC BY 4.0). */
+.beer-return{display:inline-flex;align-items:center;min-height:36px;padding:4px 12px;color:inherit;text-decoration:underline;text-underline-offset:4px;font:500 13px/1.4 system-ui,sans-serif}
+.beer-return:focus-visible,:is([data-beer-page="rot"],[data-beer-page="classic"]) :is(.copy-btn,textarea):focus-visible{outline:2px solid #8ab4f8;outline-offset:2px}
+:is([data-beer-page="beer"],[data-beer-page="shifr"],[data-beer-page="rice"]) .hero{background:var(--md-surface-container);color:var(--md-on-surface);border:1px solid var(--md-outline-variant);padding:24px;border-radius:16px}
+:is([data-beer-page="beer"],[data-beer-page="shifr"],[data-beer-page="rice"]) .hero h1 b{font-weight:600;color:var(--md-primary)}
+:is([data-beer-page="beer"],[data-beer-page="shifr"],[data-beer-page="rice"]) .hero .mug{display:none}
+:is([data-beer-page="beer"],[data-beer-page="shifr"]) .game-card:hover{transform:none}
+:is([data-beer-page="beer"],[data-beer-page="shifr"]) .game-card .gc-icon{background:var(--md-surface-container-high);color:var(--md-primary)}
+:is([data-beer-page="rot"],[data-beer-page="classic"],[data-beer-page="legacy"]) .translator-container{box-shadow:none;border-radius:12px}
+:is([data-beer-page="rot"],[data-beer-page="classic"],[data-beer-page="legacy"]) h1{font-size:clamp(22px,4vw,32px);line-height:1.2;margin-block:12px 16px;text-align:center}
+:is([data-beer-page="rot"],[data-beer-page="classic"],[data-beer-page="legacy"]) .header-tabs{min-height:48px;gap:8px;padding-inline:12px}
+:is([data-beer-page="rot"],[data-beer-page="classic"],[data-beer-page="legacy"]) textarea{padding-inline-end:32px;box-sizing:border-box}
+:is([data-beer-page="rot"],[data-beer-page="classic"]) .panel{min-width:min(100%,300px);padding:16px}
+:is([data-beer-page="rot"],[data-beer-page="classic"],[data-beer-page="legacy"]) .swap-icon:hover{transform:none}
+[data-beer-page="legacy"] :is(.action-tab,.gcard,.atab){text-transform:none;letter-spacing:normal}
+[data-beer-page="legacy"] .blobs{display:none}
+[data-beer-page="legacy"] .gcard:hover{transform:none;box-shadow:none}
+[data-beer-page="cases"] body,[data-beer-page="upgrader"] body{background-image:none}
+[data-beer-page="cases"] .online b::before{animation:none;box-shadow:none}
+[data-beer-page="cases"] .promo-code button{background:#e8be66;color:#201a12;box-shadow:none}
+[data-beer-page="cases"] .lb-row.place-1{background:var(--panel);border-color:var(--line);box-shadow:none}
+[data-beer-page="cases"] .case-grid,[data-beer-page="cases"] .lim-grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,160px),1fr))}
+[data-beer-page="upgrader"] .mainnav a{text-transform:none;letter-spacing:normal}
+[data-beer-page="upgrader"] .logo{font-weight:600;letter-spacing:normal}
+[data-beer-page="upgrader"] .beer-return{color:#d8d8df;background:#17171a}
+[data-beer-page="rice"] .grain-fx{display:none}
+[data-beer-page="rice"] :is(.conv-lbl,.rice-lang){text-transform:none;letter-spacing:normal}
+[data-beer-page="music"] .beer-return,[data-beer-page="clicker"] .beer-return,[data-beer-page="rat"] .beer-return{position:absolute;inset:8px auto auto 8px;z-index:6;background:#202422;border-radius:6px;color:#edf0ed}
+[data-beer-page="music"] :is(.grain,.blob,.hero-tag,.logo-pip){display:none}
+[data-beer-page="music"] #s-setup::before,[data-beer-page="music"] .setup-right::before{display:none}
+[data-beer-page="music"] .setup-wrap{grid-template-columns:minmax(0,1fr) minmax(0,560px)}
+[data-beer-page="music"] .setup-hero{padding:64px 40px 32px}
+[data-beer-page="music"] .hero-h{font-size:clamp(30px,5vw,64px);font-weight:500;letter-spacing:normal;line-height:1.05}
+[data-beer-page="music"] .hero-desc{margin-top:16px}
+[data-beer-page="music"] :is(.logo-txt,.sec-lbl,.hst-l){letter-spacing:normal;text-transform:none;font-size:12px}
+[data-beer-page="music"] .ai-card{min-width:0;box-shadow:none}
+[data-beer-page="music"] .ai-card.sel::after{content:none}
+[data-beer-page="rat"] .hero{justify-content:start;align-items:end;padding:24px;box-sizing:border-box;height:100dvh}
+[data-beer-page="rat"] h1{margin:0;padding:8px 12px;background:#1d211ee8;font-size:clamp(20px,4vw,36px);font-weight:500;text-shadow:none;border-radius:6px}
+[data-beer-page="clicker"] #main-btn{max-width:calc(100vw - 32px);padding:16px 32px;letter-spacing:normal;box-shadow:none}
+[data-beer-page="clicker"] #bubble{max-width:calc(100vw - 32px)}
+[data-beer-page="csr"] #game .game-nav a{display:inline-flex;min-height:36px;align-items:center;padding-inline:8px;color:#d7f2ff}
+[data-beer-page="csr"] #game .game-nav a[aria-current="page"]{background:#172e39;border-radius:6px}
+[data-beer-page="csr"] .caser-rewards h2,[data-beer-page="csr"] .caser-rewards h3{text-transform:none}
+[data-beer-page="csr-catalog"] .cards{gap:12px}
+[data-beer-page="csr-catalog"] article img{background:#282e33}
+@media(max-width:900px){
+  [data-beer-page="music"] .setup-wrap{grid-template-columns:minmax(0,1fr)}
+  [data-beer-page="music"] .setup-hero{display:flex;padding:64px 20px 24px;gap:12px}
+  [data-beer-page="music"] .setup-right{padding:24px 20px;min-height:0}
+}
+@media(max-width:600px){
+  [data-beer-page="cases"] .header{gap:4px;padding-inline:8px}
+  [data-beer-page="cases"] .header .logo .lt{font-size:18px}
+  [data-beer-page="cases"] .header .user{min-width:0;gap:4px}
+  [data-beer-page="cases"] :is(.case-grid,.lim-grid){grid-template-columns:repeat(2,minmax(0,1fr))}
+  [data-beer-page="cases"] .footer{padding-bottom:80px}
+  :is([data-beer-page="rot"],[data-beer-page="classic"],[data-beer-page="legacy"]) .header-tabs{gap:6px;flex-wrap:wrap;height:auto}
+  [data-beer-page="csr"] #game .game-nav{gap:4px}
+}
+@media(prefers-reduced-motion:reduce){
+  [data-beer-page="clicker"] :is(#bubble,#main-btn),[data-beer-page="music"] .ai-card{transition:none}
+}
